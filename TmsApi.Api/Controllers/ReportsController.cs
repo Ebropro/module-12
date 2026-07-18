@@ -33,7 +33,7 @@ public class ReportsController : ControllerBase
             {
                 s.Id,
                 s.Name,
-                GPA = s.Gpa,
+                GPA = s.GPA,
                 s.IsActive
             })
             .ToListAsync(cancellationToken);

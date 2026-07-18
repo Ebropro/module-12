@@ -12,7 +12,7 @@ public class TestController(TmsDbContext context) : ControllerBase
     {
         Console.WriteLine("STEP 1: Building query (NO SQL yet)");
 
-        var query = context.Students.Where(s => s.Gpa >= 3.0m);
+        var query = context.Students.Where(s => s.GPA >= 3.0m);
 
         Console.WriteLine("STEP 2: Adding ordering (still NO SQL)");
 

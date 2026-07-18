@@ -31,7 +31,7 @@ public class StudentService(TmsDbContext context, ILogger<StudentService> logger
         // Step 4: sort — whitelist allowed columns, fall back to Name
         IQueryable<Student> sorted = request.OrderBy switch
         {
-            "GPA"                => request.Descending ? query.OrderByDescending(s => s.Gpa)  : query.OrderBy(s => s.Gpa),
+            "GPA"                => request.Descending ? query.OrderByDescending(s => s.GPA)  : query.OrderBy(s => s.GPA),
             "Age"                => request.Descending ? query.OrderByDescending(s => s.Age)  : query.OrderBy(s => s.Age),
             "RegistrationNumber" => request.Descending ? query.OrderByDescending(s => s.RegistrationNumber) : query.OrderBy(s => s.RegistrationNumber),
             _                    => request.Descending ? query.OrderByDescending(s => s.Name) : query.OrderBy(s => s.Name),
@@ -47,7 +47,7 @@ public class StudentService(TmsDbContext context, ILogger<StudentService> logger
                 s.RegistrationNumber,
                 s.Name,
                 s.Age,
-                s.Gpa,
+                s.GPA,
                 s.IsActive,
                 s.Enrollments.Count))
             .ToListAsync(ct);
@@ -72,7 +72,7 @@ public class StudentService(TmsDbContext context, ILogger<StudentService> logger
                 s.RegistrationNumber,
                 s.Name,
                 s.Age,
-                s.Gpa,
+                s.GPA,
                 s.IsActive,
                 s.Enrollments.Count))
             .FirstOrDefaultAsync(ct);
@@ -87,7 +87,7 @@ public class StudentService(TmsDbContext context, ILogger<StudentService> logger
             RegistrationNumber = request.RegistrationNumber,
             Name               = request.Name,
             Age                = request.Age,
-            Gpa                = request.GPA,
+            GPA                = request.GPA,
             IsActive           = request.IsActive
         };
 
@@ -112,7 +112,7 @@ public class StudentService(TmsDbContext context, ILogger<StudentService> logger
 
         existing.Name      = request.Name;
         existing.Age       = request.Age;
-        existing.Gpa       = request.GPA;
+        existing.GPA       = request.GPA;
         existing.IsActive  = request.IsActive;
 
         // Set original Version so EF can detect concurrent modifications
@@ -164,7 +164,7 @@ public class StudentService(TmsDbContext context, ILogger<StudentService> logger
                 s.RegistrationNumber,
                 s.Name,
                 s.Age,
-                s.Gpa,
+                s.GPA,
                 s.IsActive,
                 s.Enrollments.Count))
             .ToListAsync(ct);

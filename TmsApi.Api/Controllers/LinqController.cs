@@ -18,7 +18,7 @@ public class LinqController(TmsDbContext context) : ControllerBase
     public async Task<IActionResult> GetActiveStudentsCount()
     {
         var count = await context.Students
-            .Where(s => s.IsActive && s.Gpa >= 3.0m)
+            .Where(s => s.IsActive && s.GPA >= 3.0m)
             .CountAsync();
 
         return Ok(new { count });
@@ -53,7 +53,7 @@ public class LinqController(TmsDbContext context) : ControllerBase
             .Select(g => new
             {
                 Course = g.Key,
-                AverageGPA = g.Average(e => e.Student.Gpa)
+                AverageGPA = g.Average(e => e.Student.GPA)
             })
             .ToListAsync();
 

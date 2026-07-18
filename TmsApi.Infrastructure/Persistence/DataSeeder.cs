@@ -94,7 +94,7 @@ MaxCapacity = maxCapacity
                     RegistrationNumber = registrationNumber,
                     Name = name,
                     Age = age,
-                    Gpa = gpa,
+                    GPA = gpa,
                     IsActive = true,
                     IsDeleted = false
                 });
