@@ -5,9 +5,6 @@ using TmsApi.Application.Interfaces;
 namespace TmsApi.Api.Controllers;
 
 // [Tags] at class level — groups ALL course actions under "Courses" in Scalar
-// Per-action [Tags] would break grouping
-// [Produces] — declares response content type for Scalar's Try It panel
-// Class-level 500 — every action inherits it, no need to repeat per-action
 [ApiController]
 [Route("api/courses")]
 [Tags("Courses")]
@@ -17,6 +14,7 @@ namespace TmsApi.Api.Controllers;
 [ProducesResponseType(typeof(ProblemDetails),StatusCodes.Status409Conflict)]
 public class CoursesController(
     ICourseService courseService,
+    ICachedCourseService cachedCourseService,
     LinkGenerator linkGenerator) : ControllerBase // LinkGenerator injected — no string interpolation
 {
     // ── Exercise 4: GET paginated collection 
@@ -101,6 +99,12 @@ public class CoursesController(
         }
 
         var result = await courseService.CreateAsync(request, ct);
+
+        // M7 Session 2 — Exercise 3, Step 6: a new course changes both the
+        // "courses:all" page results and any GetById reads, so the whole
+        // tag is invalidated rather than trying to patch one key.
+        await cachedCourseService.InvalidateCourseCacheAsync(ct);
+
         return CreatedAtAction(nameof(GetCourseById), new { id = result.Id }, result);
     }
 }

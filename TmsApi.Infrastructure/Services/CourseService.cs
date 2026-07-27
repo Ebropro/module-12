@@ -10,6 +10,15 @@ namespace TmsApi.Infrastructure.Services;
 
 public class CourseService(TmsDbContext context, ILogger<CourseService> logger) : ICourseService
 {
+    
+    
+        public Task<Course?> GetByCodeAsync(string code, CancellationToken ct) =>
+            context.Courses
+                .Include(c => c.Enrollments) // required for Enrollments.Count check
+                .FirstOrDefaultAsync(c => c.Code == code, ct);
+        // No AsNoTracking here — we don't need to track but it's harmless
+        // If you add AsNoTracking, course.Enrollments.Count still works
+        
     // Exercise 1-2 read path
     public Task<CourseResponseDto?> GetByIdAsync(int id, CancellationToken ct) =>
         context.Courses
@@ -44,6 +53,24 @@ logger.LogInformation(
     course.Code);
 
 return (await GetByIdAsync(course.Id, ct))!;
+}
+
+// M7 Session 2 — Exercise 3, Step 6 support: the write path PUT /api/v2/courses/{id} calls.
+public async Task<CourseResponseDto?> UpdateAsync(int id, UpdateCourseRequest request, CancellationToken ct)
+{
+    var course = await context.Courses.FirstOrDefaultAsync(c => c.Id == id, ct);
+    if (course is null)
+        return null;
+
+    course.Title = request.Title;
+    if (request.MaxCapacity.HasValue)
+        course.MaxCapacity = request.MaxCapacity.Value;
+
+    await context.SaveChangesAsync(ct);
+
+    logger.LogInformation("Updated course {CourseId} ({Code})", course.Id, course.Code);
+
+    return await GetByIdAsync(course.Id, ct);
 }
 //  Exercise 3: Duplicate check
 public Task<bool> CodeExistsAsync(string code, CancellationToken ct) =>
