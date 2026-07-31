@@ -17,6 +17,15 @@ public class EnrollmentConfiguration : IEntityTypeConfiguration<Enrollment>
         // ✅ Task 2: IsArchived column with a sensible default
         builder.Property(e => e.IsArchived).IsRequired().HasDefaultValue(false);
 
+        // M9 Session 1: stored as string ("Pending"/"Approved"/"Rejected") rather than
+        // an int, so the raw DB value is human-readable and matches the Angular
+        // Enrollment.status string union exactly, with zero mapping on either side.
+        builder.Property(e => e.Status)
+            .HasConversion<string>()
+            .HasMaxLength(20)
+            .IsRequired()
+            .HasDefaultValue(EnrollmentStatus.Pending);
+
         // RELATIONSHIP: Student → Enrollments
         builder.HasOne(e => e.Student)
             .WithMany(s => s.Enrollments)

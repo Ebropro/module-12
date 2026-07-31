@@ -65,6 +65,53 @@ public class EnrollmentService(
                 e.Id, e.CourseId, e.StudentId, e.EnrolledAt))
             .ToListAsync(ct);
 
+    // ── GetAllSummaryAsync ────────────────────────────────────
+    // M9 Session 1: powers the instructor dashboard's EnrollmentStore.loadEnrollments().
+    // Unscoped by course/student on purpose — this is the "everything, right now"
+    // view an instructor triages during Enrollment Week.
+    public async Task<IReadOnlyList<EnrollmentSummaryDto>> GetAllSummaryAsync(CancellationToken ct) =>
+        await context.Enrollments
+            .AsNoTracking()
+            .Select(e => new EnrollmentSummaryDto(
+                e.Id,
+                e.StudentId,
+                e.Student.Name,
+                e.CourseId,
+                e.Course.Title,
+                e.Status.ToString(),
+                e.EnrolledAt))
+            .ToListAsync(ct);
+
+    // ── ApproveAsync ──────────────────────────────────────────
+    // M9 Session 1: the server-side half of the store's optimistic approve flow.
+    // The Angular store already flipped the status locally before this call
+    // lands — if this fails, the store rolls back to "Pending" client-side.
+    public async Task<EnrollmentSummaryDto?> ApproveAsync(int id, CancellationToken ct)
+    {
+        var enrollment = await context.Enrollments
+            .Include(e => e.Student)
+            .Include(e => e.Course)
+            .FirstOrDefaultAsync(e => e.Id == id, ct);
+
+        if (enrollment is null)
+            return null;
+
+        enrollment.Status = EnrollmentStatus.Approved;
+        await context.SaveChangesAsync(ct);
+
+        logger.LogInformation("Approved enrollment {EnrollmentId}", enrollment.Id);
+
+        return new EnrollmentSummaryDto(
+            enrollment.Id,
+            enrollment.StudentId,
+            enrollment.Student.Name,
+            enrollment.CourseId,
+            enrollment.Course.Title,
+            enrollment.Status.ToString(),
+            enrollment.EnrolledAt);
+    }
+        
+
     // Exercise 3: Write path// Capacity check lives in the CONTROLLER
     public async Task<EnrollmentResponseDto> CreateAsync(
         int courseId,
