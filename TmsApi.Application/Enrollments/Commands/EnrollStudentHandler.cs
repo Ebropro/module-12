@@ -3,12 +3,14 @@ using TmsApi.Application.Common;
 using TmsApi.Application.Interfaces;
 using TmsApi.Domain.Entities;
 
+
 namespace TmsApi.Application.Enrollments.Commands;
 
 public class EnrollStudentHandler(
     IEnrollmentService enrollmentService,
     ICourseService courseService,
-    ICachedCourseService cachedCourseService)
+    ICachedCourseService cachedCourseService,
+    IEnrollmentNotifier notifier)
     : IRequestHandler<EnrollStudentCommand, Result<EnrollmentCreated, EnrollmentError>>
 {
     public async Task<Result<EnrollmentCreated, EnrollmentError>> Handle(
@@ -36,7 +38,13 @@ public class EnrollStudentHandler(
             EnrolledAt = DateTime.UtcNow
         };
 
+
+    // signal
         await enrollmentService.AddAsync(enrollment, ct);
+
+        await notifier.EnrollmentCreatedAsync(
+    enrollment,
+    ct);
 
         // M7 Session 2 — Exercise 3, Step 6: enrolling doesn't touch the
         // Courses table, but it changes EnrollmentCount on the cached

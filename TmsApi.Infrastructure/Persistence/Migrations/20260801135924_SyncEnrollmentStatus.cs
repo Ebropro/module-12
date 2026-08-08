@@ -5,7 +5,7 @@
 namespace TmsApi.Infrastructure.Persistence.Migrations
 {
     /// <inheritdoc />
-    public partial class AddEnrollmentStatus : Migration
+    public partial class SyncEnrollmentStatus : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

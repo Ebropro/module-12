@@ -19,14 +19,12 @@ public interface IEnrollmentService
 
     Task AddAsync(Enrollment enrollment, CancellationToken ct);
 
-     Task<List<Enrollment>> GetByStudentIdAsync(int studentId, CancellationToken ct);
-
-     // M9 Session 1: unscoped, cross-course view for the instructor dashboard.
-    // Deliberately separate from GetByCourseAsync — that one is per-course
-    // and returns EnrollmentResponseDto; this one is global and denormalized.
+    Task<List<Enrollment>> GetByStudentIdAsync(int studentId, CancellationToken ct);
+//M9
     Task<IReadOnlyList<EnrollmentSummaryDto>> GetAllSummaryAsync(CancellationToken ct);
 
     // Returns null if the enrollment doesn't exist, so the controller can 404.
     Task<EnrollmentSummaryDto?> ApproveAsync(int id, CancellationToken ct);
+
 }
 

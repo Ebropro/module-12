@@ -65,10 +65,7 @@ public class EnrollmentService(
                 e.Id, e.CourseId, e.StudentId, e.EnrolledAt))
             .ToListAsync(ct);
 
-    // ── GetAllSummaryAsync ────────────────────────────────────
-    // M9 Session 1: powers the instructor dashboard's EnrollmentStore.loadEnrollments().
-    // Unscoped by course/student on purpose — this is the "everything, right now"
-    // view an instructor triages during Enrollment Week.
+
     public async Task<IReadOnlyList<EnrollmentSummaryDto>> GetAllSummaryAsync(CancellationToken ct) =>
         await context.Enrollments
             .AsNoTracking()
@@ -110,7 +107,7 @@ public class EnrollmentService(
             enrollment.Status.ToString(),
             enrollment.EnrolledAt);
     }
-        
+
 
     // Exercise 3: Write path// Capacity check lives in the CONTROLLER
     public async Task<EnrollmentResponseDto> CreateAsync(

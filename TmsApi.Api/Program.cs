@@ -1,3 +1,4 @@
+using System.Threading.Channels;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 using Microsoft.AspNetCore.Authentication;
@@ -19,9 +20,26 @@ using Microsoft.Extensions.Caching.Hybrid;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.RateLimiting;
 using TmsApi.Api.RateLimiting;
+using TmsApi.Infrastructure.Hubs;
+using TmsApi.Infrastructure.Transcripts;
+using TmsApi.Application.Transcripts;
+using TmsApi.Infrastructure.Workers;
+using TmsApi.Api.Hubs;
+using TmsApi.Application.Notifications;
+using TmsApi.Api.Notifications;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddSignalR();
+
+builder.Services.AddSingleton<ITranscriptNotificationService, SignalRTranscriptNotificationService>();
+
+builder.Services.AddScoped<
+    IEnrollmentNotifier,
+    SignalREnrollmentNotifier>();
+
+builder.Services.AddHostedService<TranscriptWorker>();
 
 builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssembly(typeof(EnrollStudentHandler).Assembly));
@@ -53,6 +71,12 @@ builder.Services.AddDbContext<TmsDbContext>(options =>
 //         .EnableSensitiveDataLogging()  // Show parameters in query logs (dev only)
 // );
 
+builder.Services.AddSingleton(Channel.CreateBounded<TranscriptRequest>(
+new BoundedChannelOptions(100)
+{
+    FullMode = BoundedChannelFullMode.Wait
+}));
+
 builder.Host.UseDefaultServiceProvider(options =>
 {
     options.ValidateScopes = true;
@@ -64,6 +88,7 @@ builder.Services.AddControllers(options =>
     options.Filters.Add<AuditLogFilter>();
 });
 
+builder.Services.AddSignalR();
 
 
 // M7 - Exercise 1: API Versioning
@@ -124,50 +149,20 @@ builder.Services.AddHybridCache(options =>
 
 builder.Services.AddSingleton<EnrollmentWorker>();
 
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAngular", policy =>
+        policy
+            .WithOrigins("http://localhost:4200")
+            .AllowAnyHeader()
+            .AllowAnyMethod());
+});
+
 // M7 Session 2 — Exercise 4, Step 2: tier-aware token bucket as the global policy
 builder.Services.AddRateLimiter(options =>
 {
-    // options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
-    // {
-    //     var (partitionKey, tier) = ApiKeyResolver.Resolve(httpContext);
-
-    //     return tier switch
-    //     {
-    //         ApiKeyTier.Paid => RateLimitPartition.GetTokenBucketLimiter(
-    //             partitionKey: $"paid:{partitionKey}",
-    //             factory: _ => new TokenBucketRateLimiterOptions
-    //             {
-    //                 TokenLimit = 200,
-    //                 TokensPerPeriod = 100,
-    //                 ReplenishmentPeriod = TimeSpan.FromSeconds(10),
-    //                 QueueLimit = 0,
-    //                 AutoReplenishment = true
-    //             }),
-    //         ApiKeyTier.Free => RateLimitPartition.GetTokenBucketLimiter(
-    //             partitionKey: $"free:{partitionKey}",
-    //             factory: _ => new TokenBucketRateLimiterOptions
-    //             {
-    //                 TokenLimit = 30,
-    //                 TokensPerPeriod = 10,
-    //                 ReplenishmentPeriod = TimeSpan.FromSeconds(10),
-    //                 QueueLimit = 0,
-    //                 AutoReplenishment = true
-    //             }),
-    //         _ => RateLimitPartition.GetTokenBucketLimiter(
-    //             partitionKey: $"anon:{partitionKey}",
-    //             factory: _ => new TokenBucketRateLimiterOptions
-    //             {
-    //                 TokenLimit = 10,
-    //                 TokensPerPeriod = 5,
-    //                 ReplenishmentPeriod = TimeSpan.FromSeconds(10),
-    //                 QueueLimit = 0,
-    //                 AutoReplenishment = true
-    //             })
-    //     };
-    // });
-
-
-// ==========================================================================
+ 
 options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
 {
     if (httpContext.Request.Path.StartsWithSegments("/api/v2/transcripts"))
@@ -213,15 +208,8 @@ options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpC
             })
     };
 });
-// ==========================================================================
-
-
 
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
-
-    
-
-    
     options.OnRejected = async (context, ct) =>
     {
         var retryAfter = "10";
@@ -263,13 +251,19 @@ builder.Services.AddOptions<PaymentOptions>()
     .ValidateDataAnnotations()
     .ValidateOnStart();
 
+
+builder.Services.AddSingleton<ITranscriptStatusStore, InMemoryTranscriptStatusStore>();
+
+
 var app = builder.Build();
+app.MapHub<TmsHub>("/hubs/tms");
 
 app.UseMiddleware<RequestLoggingMiddleware>();
 app.UseExceptionHandler();
 app.UseStatusCodePages();
 app.UseHttpsRedirection();
 app.UseRouting();
+app.UseCors("AllowAngular");
 app.UseRateLimiter();
 app.UseMiddleware<V1DeprecationMiddleware>();
 app.UseAuthentication();
@@ -288,9 +282,6 @@ app.MapGet("/api/assessments/results", () => Results.Ok(new
     letterGrade = "A"
 }))
 .RequireAuthorization(); // Forces authentication before execution
-
-
-
 app.MapControllers();
 app.MapGet("/api/error", () =>
 {
@@ -300,6 +291,7 @@ app.MapGet("/api/error", () =>
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.MapHub<EnrollmentHub>("/hubs/enrollments");
 
     app.MapScalarApiReference(options =>
     {

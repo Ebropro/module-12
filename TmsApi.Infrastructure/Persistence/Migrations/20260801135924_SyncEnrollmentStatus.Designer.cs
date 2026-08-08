@@ -12,8 +12,8 @@ using TmsApi.Infrastructure.Persistence;
 namespace TmsApi.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(TmsDbContext))]
-    [Migration("20260731182439_AddEnrollmentStatus")]
-    partial class AddEnrollmentStatus
+    [Migration("20260801135924_SyncEnrollmentStatus")]
+    partial class SyncEnrollmentStatus
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
