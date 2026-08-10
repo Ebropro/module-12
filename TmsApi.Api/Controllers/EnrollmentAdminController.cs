@@ -3,9 +3,8 @@ using TmsApi.Application.Interfaces;
 
 namespace TmsApi.Api.Controllers;
 
-// M9 Session 1: the instructor dashboard's SignalStore talks to this controller.
-// Deliberately NOT under api/v{version}/... or api/courses/{courseId}/... —
-// this is a flat, unscoped, admin-facing surface, matching the lab's assumed
+// M9-1: the instructor dashboard's SignalStore talks to this controller.
+// Deliberately NOT under api/v{version}/... or api/courses/{courseId}/...
 // GET /api/enrollments and POST /api/enrollments/{id}/approve exactly.
 [ApiController]
 [Route("api/enrollments")]

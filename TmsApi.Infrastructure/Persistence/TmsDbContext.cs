@@ -24,6 +24,9 @@ public class TmsDbContext : DbContext
     public DbSet<Assessment> Assessments => Set<Assessment>();
     public DbSet<Certificate> Certificates => Set<Certificate>();
 
+    // M9 Session 3: grade submissions from the instructor grading form
+    public DbSet<GradeSubmission> Grades => Set<GradeSubmission>();
+
     // ======================
     // FLUENT CONFIGURATION LOADER
     // ======================

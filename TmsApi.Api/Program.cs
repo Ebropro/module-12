@@ -238,7 +238,7 @@ options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpC
         opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
     });
 });
-
+builder.Services.AddScoped<IGradeService, GradeService>();
 builder.Services.AddScoped<IStudentService, StudentService>();
 builder.Services.AddScoped<ICourseService, CourseService>();
 builder.Services.AddScoped<IEnrollmentService, EnrollmentService>();
