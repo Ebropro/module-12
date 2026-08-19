@@ -55,26 +55,59 @@ logger.LogInformation(
 return (await GetByIdAsync(course.Id, ct))!;
 }
 
-// M7 Session 2 — Exercise 3, Step 6 support: the write path PUT /api/v2/courses/{id} calls.
-public async Task<CourseResponseDto?> UpdateAsync(int id, UpdateCourseRequest request, CancellationToken ct)
-{
-    var course = await context.Courses.FirstOrDefaultAsync(c => c.Id == id, ct);
-    if (course is null)
-        return null;
+    // M7 Session 2 — Exercise 3, Step 6 support: the write path PUT /api/v2/courses/{id} calls.
+    public async Task<CourseResponseDto?> UpdateAsync(int id, UpdateCourseRequest request, CancellationToken ct)
+    {
+        var course = await context.Courses.FirstOrDefaultAsync(c => c.Id == id, ct);
+        if (course is null)
+            return null;
 
-    course.Title = request.Title;
-    if (request.MaxCapacity.HasValue)
-        course.MaxCapacity = request.MaxCapacity.Value;
+        course.Title = request.Title;
+        if (request.MaxCapacity.HasValue)
+            course.MaxCapacity = request.MaxCapacity.Value;
 
-    await context.SaveChangesAsync(ct);
+        await context.SaveChangesAsync(ct);
 
-    logger.LogInformation("Updated course {CourseId} ({Code})", course.Id, course.Code);
+        logger.LogInformation("Updated course {CourseId} ({Code})", course.Id, course.Code);
 
-    return await GetByIdAsync(course.Id, ct);
-}
-//  Exercise 3: Duplicate check
-public Task<bool> CodeExistsAsync(string code, CancellationToken ct) =>
-context.Courses.AsNoTracking().AnyAsync(c => c.Code == code, ct);
+        return await GetByIdAsync(course.Id, ct);
+    }
+    //
+
+
+    public async Task<(bool Found, bool HasEnrollments, string? CourseCode)> DeleteAsync(
+    int id,
+    CancellationToken ct)
+    {
+        var course = await context.Courses
+            .Include(c => c.Enrollments)
+            .FirstOrDefaultAsync(c => c.Id == id, ct);
+
+        if (course is null)
+            return (false, false, null);
+
+        if (course.Enrollments.Any())
+            return (true, true, course.Code);
+
+        context.Courses.Remove(course);
+
+        await context.SaveChangesAsync(ct);
+
+        logger.LogInformation(
+            "Deleted course {CourseId} ({Code})",
+            course.Id,
+            course.Code);
+
+        return (true, false, course.Code);
+    }
+
+
+
+
+
+    //
+    public Task<bool> CodeExistsAsync(string code, CancellationToken ct) =>
+    context.Courses.AsNoTracking().AnyAsync(c => c.Code == code, ct);
 
 // ── Session 2 Exercise 4: Paginated collection ────────────
     // THE ORDER IS THE LESSON:

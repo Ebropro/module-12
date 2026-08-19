@@ -18,6 +18,13 @@ public interface ICourseService
     // Exercise 3: pre-check before insert — prevents 500 from unique index violation
     Task<bool> CodeExistsAsync(string code, CancellationToken ct);
 
+    Task<(bool Found, bool HasEnrollments, string? CourseCode)> DeleteAsync(
+        int id,
+        CancellationToken ct);
+
+
+
+
     Task<PagedResponse<CourseResponseDto>> GetCoursesAsync(PagedRequest
 request, CancellationToken ct);
 }

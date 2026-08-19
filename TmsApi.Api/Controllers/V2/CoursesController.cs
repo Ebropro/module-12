@@ -80,4 +80,38 @@ public class CoursesController(
 
         return Ok(updated);
     }
+
+    //
+
+    [HttpDelete("{id:int}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> DeleteCourse(
+    int id,
+    CancellationToken ct)
+    {
+        //Temporary delay
+        await Task.Delay(3000, ct);
+        var result = await courseService.DeleteAsync(id, ct);
+
+        if (!result.Found)
+            return NotFound();
+
+        if (result.HasEnrollments)
+        {
+            return Conflict(new ProblemDetails
+            {
+                Status = StatusCodes.Status409Conflict,
+                Title = "Course deletion rejected",
+                Detail =
+                    $"Course {result.CourseCode} cannot be deleted because it has active student enrollments."
+            });
+        }
+
+        await cachedCourseService.InvalidateCourseCacheAsync(ct);
+
+        return NoContent();
+    }
+
 }
