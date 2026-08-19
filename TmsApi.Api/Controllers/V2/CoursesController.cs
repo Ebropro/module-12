@@ -92,7 +92,7 @@ public class CoursesController(
     CancellationToken ct)
     {
         //Temporary delay
-        await Task.Delay(3000, ct);
+        await Task.Delay(900, ct);
         var result = await courseService.DeleteAsync(id, ct);
 
         if (!result.Found)

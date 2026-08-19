@@ -1,12 +1,17 @@
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using TmsApi.Infrastructure.Identity;
 using Microsoft.EntityFrameworkCore;
 using TmsApi.Domain.Entities;
 
-//EXERSCICE 4  FINAL UPDATE VERSION IS THIS ONE !
+
+
+
 
 namespace TmsApi.Infrastructure.Persistence;
 
 
-public class TmsDbContext : DbContext
+public class TmsDbContext : IdentityDbContext<TmsUser>
+
 {
     public TmsDbContext(DbContextOptions<TmsDbContext> options)
         : base(options)

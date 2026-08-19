@@ -1,3 +1,7 @@
+using Microsoft.AspNetCore.Identity;
+using TmsApi.Infrastructure.Identity;
+
+
 using System.Threading.Channels;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
@@ -69,6 +73,23 @@ builder.Services.AddProblemDetails();
 
 builder.Services.AddDbContext<TmsDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("TmsDatabase")));
+
+builder.Services.AddIdentityCore<TmsUser>(options =>
+{
+    // Enterprise Password Policy
+    options.Password.RequiredLength = 12;
+    options.Password.RequireUppercase = true;
+    options.Password.RequireDigit = true;
+    options.Password.RequireNonAlphanumeric = true;
+
+    // Brute-Force Lockout Protection
+    options.Lockout.MaxFailedAccessAttempts = 5;
+    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
+    options.Lockout.AllowedForNewUsers = true;
+})
+.AddRoles<IdentityRole>()
+.AddEntityFrameworkStores<TmsDbContext>();
+
 
 // builder.Services.AddDbContext<TmsDbContext>(options =>
 //     options
