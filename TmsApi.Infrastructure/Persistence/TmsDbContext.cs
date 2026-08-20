@@ -3,12 +3,7 @@ using TmsApi.Infrastructure.Identity;
 using Microsoft.EntityFrameworkCore;
 using TmsApi.Domain.Entities;
 
-
-
-
-
 namespace TmsApi.Infrastructure.Persistence;
-
 
 public class TmsDbContext : IdentityDbContext<TmsUser>
 
@@ -24,13 +19,12 @@ public class TmsDbContext : IdentityDbContext<TmsUser>
     public DbSet<Student> Students => Set<Student>();
     public DbSet<Course> Courses => Set<Course>();
     public DbSet<Enrollment> Enrollments => Set<Enrollment>();
-
-    //  Extended (Stretch): Wire Assessment and Certificate into the Database
     public DbSet<Assessment> Assessments => Set<Assessment>();
     public DbSet<Certificate> Certificates => Set<Certificate>();
-
-    // M9 Session 3: grade submissions from the instructor grading form
     public DbSet<GradeSubmission> Grades => Set<GradeSubmission>();
+    // M11 - refresh tokens
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+
 
     // ======================
     // FLUENT CONFIGURATION LOADER

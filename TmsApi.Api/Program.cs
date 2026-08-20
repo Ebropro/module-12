@@ -1,7 +1,9 @@
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using TmsApi.Infrastructure.Services;
 using Microsoft.AspNetCore.Identity;
 using TmsApi.Infrastructure.Identity;
-
-
 using System.Threading.Channels;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
@@ -149,11 +151,37 @@ builder.Services.AddApiVersioning(options =>
 
 builder.Services.AddOpenApi();
 
-// AUTHENTICATION SETUP
-// Attach a custom handler (BasicAuthHandler) that defines how users are authenticated.
-builder.Services
-    .AddAuthentication("Basic")
-    .AddScheme<AuthenticationSchemeOptions, BasicAuthHandler>("Basic", _ => { });
+// JWT AUTHENTICATION
+builder.Services.AddScoped<TokenService>();
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme =
+        JwtBearerDefaults.AuthenticationScheme;
+
+    options.DefaultChallengeScheme =
+        JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+
+        IssuerSigningKey = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(
+                builder.Configuration["Jwt:Key"]!
+            )
+        )
+    };
+});
+
 
 // M7 Session 2 — Exercise 3, Step 1: register HybridCache
 builder.Services.AddHybridCache(options =>
