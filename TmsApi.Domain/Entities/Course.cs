@@ -6,7 +6,9 @@ public required string Code { get; set; }
 public required string Title { get; set; }
 // Renamed from Capacity → MaxCapacity
 public int MaxCapacity { get; set; }
-public ICollection<Enrollment> Enrollments { get; set; } = [];
+public string? InstructorId { get; set; }
+
+    public ICollection<Enrollment> Enrollments { get; set; } = [];
 }
 
 
