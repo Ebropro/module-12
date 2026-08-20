@@ -34,6 +34,9 @@ using TmsApi.Api.Hubs;
 using TmsApi.Application.Notifications;
 using TmsApi.Api.Notifications;
 using Microsoft.AspNetCore.Antiforgery;
+using TmsApi.Api.Authorization;
+using Microsoft.AspNetCore.Authorization;
+
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -300,7 +303,14 @@ builder.Services.AddScoped<IEnrollmentService, EnrollmentService>();
 builder.Services.AddScoped<ICertificateService, CertificateService>();
 builder.Services.AddScoped<IAssessmentService, AssessmentService>();
 builder.Services.AddScoped<ICachedCourseService, CachedCourseService>();
-builder.Services.AddAuthorization();// AUTHORIZATION SETUP (ARE YOU ALLOWED?)
+
+builder.Services.AddAuthorizationBuilder()
+    .AddPolicy("CanEditCourse", policy =>
+        policy.Requirements.Add(new CourseInstructorRequirement()));
+
+builder.Services.AddSingleton<IAuthorizationHandler, CourseInstructorHandler>();
+
+
 builder.Services.AddOptions<PaymentOptions>()
     .BindConfiguration("Payments")
     .ValidateDataAnnotations()

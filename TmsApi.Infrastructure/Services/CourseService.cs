@@ -7,11 +7,9 @@ using TmsApi.Infrastructure.Persistence;
 
 namespace TmsApi.Infrastructure.Services;
 
-
 public class CourseService(TmsDbContext context, ILogger<CourseService> logger) : ICourseService
 {
-    
-    
+ 
         public Task<Course?> GetByCodeAsync(string code, CancellationToken ct) =>
             context.Courses
                 .Include(c => c.Enrollments) // required for Enrollments.Count check
@@ -74,7 +72,6 @@ return (await GetByIdAsync(course.Id, ct))!;
     }
     //
 
-
     public async Task<(bool Found, bool HasEnrollments, string? CourseCode)> DeleteAsync(
     int id,
     CancellationToken ct)
@@ -101,16 +98,11 @@ return (await GetByIdAsync(course.Id, ct))!;
         return (true, false, course.Code);
     }
 
-
-
-
-
     //
     public Task<bool> CodeExistsAsync(string code, CancellationToken ct) =>
     context.Courses.AsNoTracking().AnyAsync(c => c.Code == code, ct);
 
 // ── Session 2 Exercise 4: Paginated collection ────────────
-    // THE ORDER IS THE LESSON:
     // 1. Build query  2. Filter  3. COUNT  4. Sort  5. Skip/Take  6. Project  7. Execute
     // Counting after Skip/Take gives you page size, not total — that's fake pagination
     public async Task<PagedResponse<CourseResponseDto>> GetCoursesAsync(
@@ -128,7 +120,6 @@ return (await GetByIdAsync(course.Id, ct))!;
                 EF.Functions.ILike(c.Title, $"%{request.Search}%") ||
                 EF.Functions.ILike(c.Code,  $"%{request.Search}%"));
         }
-
         // Step 3 — COUNT before paging
         // This gives total matching rows, not just the current page
         // SQL: SELECT COUNT(*) FROM "Courses" WHERE ...
