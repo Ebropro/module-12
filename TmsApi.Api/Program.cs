@@ -15,7 +15,6 @@ using TmsApi.Api.Middlewares;
 using TmsApi.Api.Options;
 using TmsApi.Application.Interfaces;
 using TmsApi.Infrastructure.Persistence;
-using TmsApi.Infrastructure.Services;
 using Asp.Versioning;
 using TmsApi.Application.Enrollments.Commands;
 using MediatR;
