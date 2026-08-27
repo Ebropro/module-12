@@ -32,5 +32,11 @@ namespace TmsApi.Application.Interfaces
 
         // Duplicate registration number check — prevents 500 on unique constraint
         Task<bool> RegistrationNumberExistsAsync(string registrationNumber, CancellationToken ct);
+        // Authentication → Student mapping
+        Task<int?> GetIdByUserIdAsync(
+        string userId,
+        CancellationToken ct);
+
+
     }
 }

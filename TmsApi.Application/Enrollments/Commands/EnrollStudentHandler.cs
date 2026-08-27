@@ -3,7 +3,6 @@ using TmsApi.Application.Common;
 using TmsApi.Application.Interfaces;
 using TmsApi.Domain.Entities;
 
-
 namespace TmsApi.Application.Enrollments.Commands;
 
 public class EnrollStudentHandler(
@@ -17,7 +16,9 @@ public class EnrollStudentHandler(
         EnrollStudentCommand command,
         CancellationToken ct)
     {
-        var course = await courseService.GetByCodeAsync(command.CourseCode, ct);
+        var course = await courseService.GetByCodeAsync(
+            command.CourseCode,
+            ct);
 
         if (course is null)
             return Result<EnrollmentCreated, EnrollmentError>.Failure(
@@ -25,11 +26,20 @@ public class EnrollStudentHandler(
 
         if (course.Enrollments.Count >= course.MaxCapacity)
             return Result<EnrollmentCreated, EnrollmentError>.Failure(
-                EnrollmentError.CourseFull(course.Title, course.MaxCapacity));
+                EnrollmentError.CourseFull(
+                    course.Title,
+                    course.MaxCapacity));
 
-        if (await enrollmentService.ExistsAsync(command.StudentId, command.CourseCode, ct))
+        if (await enrollmentService.ExistsAsync(
+                command.StudentId,
+                command.CourseCode,
+                ct))
+        {
             return Result<EnrollmentCreated, EnrollmentError>.Failure(
-                EnrollmentError.AlreadyEnrolled(command.StudentId, command.CourseCode));
+                EnrollmentError.AlreadyEnrolled(
+                    command.StudentId,
+                    command.CourseCode));
+        }
 
         var enrollment = new Enrollment
         {
@@ -38,21 +48,20 @@ public class EnrollStudentHandler(
             EnrolledAt = DateTime.UtcNow
         };
 
-
-    // signal
-        await enrollmentService.AddAsync(enrollment, ct);
+        await enrollmentService.AddAsync(
+            enrollment,
+            ct);
 
         await notifier.EnrollmentCreatedAsync(
-    enrollment,
-    ct);
+            enrollment,
+            ct);
 
-        // M7 Session 2 — Exercise 3, Step 6: enrolling doesn't touch the
-        // Courses table, but it changes EnrollmentCount on the cached
-        // CourseResponseDto. Skipping this would leave cached seat counts
-        // stale until the TTL expires — invalidate the same tag as course writes.
         await cachedCourseService.InvalidateCourseCacheAsync(ct);
 
         return Result<EnrollmentCreated, EnrollmentError>.Success(
-            new EnrollmentCreated(enrollment.Id, enrollment.StudentId, course.Code));
+            new EnrollmentCreated(
+                enrollment.Id,
+                enrollment.StudentId,
+                course.Code));
     }
 }

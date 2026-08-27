@@ -194,4 +194,19 @@ public class StudentService(TmsDbContext context, ILogger<StudentService> logger
         context.Students
             .AsNoTracking()
             .AnyAsync(s => s.RegistrationNumber == registrationNumber, ct);
+
+    
+// ── Find student by Identity user ID ─────────────────────────
+// Used by authenticated student enrollment.
+// Returns the Student.Id associated with the logged-in Identity user.
+public Task<int?> GetIdByUserIdAsync(
+    string userId,
+    CancellationToken ct) =>
+    context.Students
+        .AsNoTracking()
+        .Where(s => s.UserId == userId)
+        .Select(s => (int?)s.Id)
+        .FirstOrDefaultAsync(ct);
+
+        
 }

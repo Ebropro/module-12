@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Identity;
+using TmsApi.Infrastructure.Identity;
 using Microsoft.EntityFrameworkCore;
 using TmsApi.Domain.Entities;
 
@@ -5,7 +7,7 @@ namespace TmsApi.Infrastructure.Persistence;
 public static class DataSeeder
 {
     // Deterministic — same 25 rows on every machine
-    private static readonly (string Code, string Title, int MaxCapacity) 
+    private static readonly (string Code, string Title, int MaxCapacity)
 [] Courses =
 [
 ("CSE-101", "Web Development Fundamentals", 30),
@@ -35,12 +37,51 @@ public static class DataSeeder
 ("UX-201", "Design Systems and Tokens", 22),
 ];
 
-
- private static readonly (string RegistrationNumber, string Name, int Age, decimal GPA)[] 
- Students = 
-
+    private static readonly (
+        string Email,
+        string FirstName,
+        string LastName,
+        string Password
+    )[] Instructors =
     [
-    
+        (
+        "leul.instructor@cotbe.edu.et",
+        "Leul",
+        "Instructor",
+        ""
+    ),
+    (
+        "lel.instructor@cotbe.edu.et",
+        "Lel",
+        "Instructor",
+        ""
+    ),
+    (
+        "instructor3@cotbe.edu.et",
+        "Instructor",
+        "Three",
+        "Instructor3@TMS2026!"
+    ),
+    (
+        "instructor4@cotbe.edu.et",
+        "Instructor",
+        "Four",
+        "Instructor4@TMS2026!"
+    ),
+    (
+        "instructor5@cotbe.edu.et",
+        "Instructor",
+        "Five",
+        "Instructor5@TMS2026!"
+    )
+    ];
+
+
+    private static readonly (string RegistrationNumber, string Name, int Age, decimal GPA)[]
+    Students =
+
+       [
+
         ("TMS-2026-0006", "Abebe Mola", 22, 3.8m),
         ("TMS-2026-0007", "John Brown", 24, 3.5m),
         ("TMS-2026-0008", "Sara Ahmed", 21, 3.9m),
@@ -66,27 +107,335 @@ public static class DataSeeder
         ("TMS-2026-0028", "Michael Brown", 21, 2.9m),
         ("TMS-2026-0029", "Emily Johnson", 23, 4.0m),
         ("TMS-2026-0030", "John Smith", 29, 3.7m),
-        
-    ];
- public static async Task SeedAsync(TmsDbContext context, CancellationToken ct = default)
-{
-await context.Database.MigrateAsync(ct);
-//seed courses
-if (!await context.Courses.AnyAsync(ct))
+
+       ];
+
+    private static readonly (
+    string RegistrationNumber,
+    string Email,
+    string FirstName,
+    string LastName
+   )[] StudentAccounts =
+   [
+    ("TMS-2026-0006", "abebe.student@cotbe.edu.et", "Abebe", "Mola"),
+    ("TMS-2026-0007", "john.student@cotbe.edu.et", "John", "Brown"),
+    ("TMS-2026-0008", "sara.student@cotbe.edu.et", "Sara", "Ahmed"),
+    ("TMS-2026-0009", "david.student@cotbe.edu.et", "David", "Wilson"),
+    ("TMS-2026-0010", "seidu.student@cotbe.edu.et", "Seidu", "Ketta")
+   ];
+
+    ///////////////
 
 
-foreach (var (code, title, maxCapacity) in Courses)
-{
-context.Courses.Add(new Course
-{
-Code = code,
-Title = title,
-MaxCapacity = maxCapacity
-});
-} await context.SaveChangesAsync(ct);
-//seed studs
- if (!await context.Students.AnyAsync(ct))
-        
+
+    private static async Task<Dictionary<string, TmsUser>> SeedInstructorsAsync(
+ UserManager<TmsUser> userManager,
+ RoleManager<IdentityRole> roleManager,
+ CancellationToken ct)
+    {
+        const string instructorRole = "Instructor";
+
+        if (!await roleManager.RoleExistsAsync(instructorRole))
+        {
+            var roleResult = await roleManager.CreateAsync(
+                new IdentityRole(instructorRole));
+
+            if (!roleResult.Succeeded)
+            {
+                throw new InvalidOperationException(
+                    $"Could not create Instructor role: " +
+                    $"{string.Join(", ", roleResult.Errors.Select(e => e.Description))}");
+            }
+        }
+
+        var instructors = new Dictionary<string, TmsUser>(
+            StringComparer.OrdinalIgnoreCase);
+
+        foreach (var seed in Instructors)
+        {
+            var user = await userManager.FindByEmailAsync(seed.Email);
+
+            if (user is null)
+            {
+                user = new TmsUser
+                {
+                    UserName = seed.Email,
+                    Email = seed.Email,
+                    EmailConfirmed = true,
+                    FirstName = seed.FirstName,
+                    LastName = seed.LastName
+                };
+
+                if (string.IsNullOrWhiteSpace(seed.Password))
+                {
+                    throw new InvalidOperationException(
+                        $"Password is required when creating seeded user {seed.Email}.");
+                }
+
+                var createResult = await userManager.CreateAsync(
+                    user,
+                    seed.Password);
+
+                if (!createResult.Succeeded)
+                {
+                    throw new InvalidOperationException(
+                        $"Could not create {seed.Email}: " +
+                        $"{string.Join(", ", createResult.Errors.Select(e => e.Description))}");
+                }
+            }
+
+            if (!await userManager.IsInRoleAsync(user, instructorRole))
+            {
+                var roleResult = await userManager.AddToRoleAsync(
+                    user,
+                    instructorRole);
+
+                if (!roleResult.Succeeded)
+                {
+                    throw new InvalidOperationException(
+                        $"Could not assign Instructor role to {seed.Email}: " +
+                        $"{string.Join(", ", roleResult.Errors.Select(e => e.Description))}");
+                }
+            }
+
+            instructors[seed.Email] = user;
+        }
+
+        return instructors;
+    }
+
+    private static async Task AssignCourseInstructorsAsync(
+   TmsDbContext context,
+   Dictionary<string, TmsUser> instructors,
+   CancellationToken ct)
+    {
+        var assignments = new Dictionary<string, string[]>
+        {
+            ["leul.instructor@cotbe.edu.et"] =
+            [
+                "CSE-101",
+            "CSE-102",
+            "CSE-103",
+            "CSE-201",
+            "CSE-202"
+            ],
+
+            ["lel.instructor@cotbe.edu.et"] =
+            [
+                "CSE-203",
+            "CSE-301",
+            "CSE-302",
+            "CSE-303",
+            "CSE-304"
+            ],
+
+            ["instructor3@cotbe.edu.et"] =
+            [
+                "CSE-305",
+            "CSE-306",
+            "DAT-101",
+            "DAT-201",
+            "DAT-202"
+            ],
+
+            ["instructor4@cotbe.edu.et"] =
+            [
+                "ARC-101",
+            "ARC-201",
+            "DEV-101",
+            "DEV-201",
+            "MOB-101"
+            ],
+
+            ["instructor5@cotbe.edu.et"] =
+            [
+                "MOB-201",
+            "AI-101",
+            "AI-201",
+            "UX-101",
+            "UX-201"
+            ]
+        };
+
+        foreach (var (email, courseCodes) in assignments)
+        {
+            var instructor = instructors[email];
+
+            foreach (var courseCode in courseCodes)
+            {
+                var course = await context.Courses
+                    .FirstOrDefaultAsync(
+                        c => c.Code == courseCode,
+                        ct);
+
+                if (course is null)
+                {
+                    continue;
+                }
+
+                course.InstructorId = instructor.Id;
+            }
+        }
+
+        await context.SaveChangesAsync(ct);
+    }
+    /// <summary>
+    /// /
+    /// </summary>
+    /// <param name="context"></param>
+    /// <param name="ct"></param>
+    /// <returns></returns>
+    /// 
+
+
+    private static async Task SeedStudentAccountsAsync(
+     TmsDbContext context,
+     UserManager<TmsUser> userManager,
+     CancellationToken ct)
+    {
+        const string password = "Student@2026!";
+
+        var studentAccounts = new[]
+        {
+        ("TMS-2026-0006", "abebe.student@cotbe.edu.et", "Abebe", "Mola"),
+        ("TMS-2026-0007", "john.student@cotbe.edu.et", "John", "Brown"),
+        ("TMS-2026-0008", "sara.student@cotbe.edu.et", "Sara", "Ahmed"),
+        ("TMS-2026-0009", "david.student@cotbe.edu.et", "David", "Wilson"),
+        ("TMS-2026-0010", "seidu.student@cotbe.edu.et", "Seidu", "Ketta")
+    };
+
+        foreach (var account in studentAccounts)
+        {
+            var student = await context.Students
+                .IgnoreQueryFilters()
+                .FirstOrDefaultAsync(
+                    s => s.RegistrationNumber == account.Item1,
+                    ct);
+
+            if (student is null)
+                continue;
+
+            var user = await userManager.FindByEmailAsync(account.Item2);
+
+            if (user is null)
+            {
+                user = new TmsUser
+                {
+                    UserName = account.Item2,
+                    Email = account.Item2,
+                    EmailConfirmed = true,
+                    FirstName = account.Item3,
+                    LastName = account.Item4
+                };
+
+                var result = await userManager.CreateAsync(
+                    user,
+                    password);
+
+                if (!result.Succeeded)
+                {
+                    var errors = string.Join(
+                        "; ",
+                        result.Errors.Select(e => e.Description));
+
+                    throw new InvalidOperationException(
+                        $"Failed to create student user {account.Item2}: {errors}");
+                }
+            }
+
+            if (!await userManager.IsInRoleAsync(user, "Student"))
+            {
+                var result = await userManager.AddToRoleAsync(
+                    user,
+                    "Student");
+
+                if (!result.Succeeded)
+                {
+                    var errors = string.Join(
+                        "; ",
+                        result.Errors.Select(e => e.Description));
+
+                    throw new InvalidOperationException(
+                        $"Failed to assign Student role to {account.Item2}: {errors}");
+                }
+            }
+
+            if (student.UserId is not null &&
+                student.UserId != user.Id)
+            {
+                throw new InvalidOperationException(
+                    $"Student {student.RegistrationNumber} is already linked to another user.");
+            }
+
+            var alreadyLinked = await context.Students
+                .IgnoreQueryFilters()
+                .FirstOrDefaultAsync(
+                    s => s.UserId == user.Id &&
+                         s.Id != student.Id,
+                    ct);
+
+            if (alreadyLinked is not null)
+            {
+                throw new InvalidOperationException(
+                    $"User {account.Item2} is already linked to " +
+                    $"student {alreadyLinked.RegistrationNumber}.");
+            }
+
+            if (student.UserId != user.Id)
+            {
+                student.UserId = user.Id;
+            }
+        }
+
+        await context.SaveChangesAsync(ct);
+    }
+
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="context"></param>
+    /// <param name="userManager"></param>
+    /// <param name="roleManager"></param>
+    /// <param name="ct"></param>
+    /// <returns></returns>
+    public static async Task SeedAsync(
+    TmsDbContext context,
+    UserManager<TmsUser> userManager,
+    RoleManager<IdentityRole> roleManager,
+    CancellationToken ct = default)
+    {
+        await context.Database.MigrateAsync(ct);
+
+        var instructors = await SeedInstructorsAsync(
+            userManager,
+            roleManager,
+            ct);
+
+        // Seed courses
+        if (!await context.Courses.AnyAsync(ct))
+        {
+            foreach (var (code, title, maxCapacity) in Courses)
+            {
+                context.Courses.Add(new Course
+                {
+                    Code = code,
+                    Title = title,
+                    MaxCapacity = maxCapacity
+                });
+            }
+
+            await context.SaveChangesAsync(ct);
+        }
+
+        await AssignCourseInstructorsAsync(
+            context,
+            instructors,
+            ct);
+
+        // Seed students
+        if (!await context.Students.AnyAsync(ct))
+        {
             foreach (var (registrationNumber, name, age, gpa) in Students)
             {
                 context.Students.Add(new Student
@@ -99,8 +448,17 @@ MaxCapacity = maxCapacity
                     IsDeleted = false
                 });
             }
+
             await context.SaveChangesAsync(ct);
-        
+        }
+
+        // Seed Identity accounts and link them to students
+        await SeedStudentAccountsAsync(
+            context,
+            userManager,
+            ct);
+    
+
 
 
         if (!await context.Assessments.AnyAsync(ct))

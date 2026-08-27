@@ -15,7 +15,7 @@ using TmsApi.Api.Middlewares;
 using TmsApi.Api.Options;
 using TmsApi.Application.Interfaces;
 using TmsApi.Infrastructure.Persistence;
-using TmsApi.Infrastructure.Services;
+//using TmsApi.Infrastructure.Services;
 using Asp.Versioning;
 using TmsApi.Application.Enrollments.Commands;
 using MediatR;
@@ -36,10 +36,13 @@ using TmsApi.Api.Notifications;
 using Microsoft.AspNetCore.Antiforgery;
 using TmsApi.Api.Authorization;
 using Microsoft.AspNetCore.Authorization;
+using TmsApi.Api.OpenApi;
 
 
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddAntiforgery(options =>
 {
@@ -129,12 +132,18 @@ builder.Services.AddOpenApi("v1", options =>
 {
     options.ShouldInclude = description =>
         description.GroupName == "v1";
+
+    options.AddDocumentTransformer<BearerSecuritySchemeTransformer>();
+    //options.AddOperationTransformer<BearerSecurityOperationTransformer>();
 });
 
 builder.Services.AddOpenApi("v2", options =>
 {
     options.ShouldInclude = description =>
         description.GroupName == "v2";
+
+    options.AddDocumentTransformer<BearerSecuritySchemeTransformer>();
+    //options.AddOperationTransformer<BearerSecurityOperationTransformer>();
 });
 
 builder.Services.AddApiVersioning(options =>
@@ -184,8 +193,6 @@ builder.Services.AddAuthentication(options =>
         )
     };
 });
-
-
 // M7 Session 2 — Exercise 3, Step 1: register HybridCache
 builder.Services.AddHybridCache(options =>
 {
@@ -206,8 +213,6 @@ builder.Services.AddHybridCache(options =>
 // });
 
 builder.Services.AddSingleton<EnrollmentWorker>();
-
-
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngular", policy =>
@@ -219,8 +224,7 @@ builder.Services.AddCors(options =>
 
 // M7 Session 2 — Exercise 4, Step 2: tier-aware token bucket as the global policy
 builder.Services.AddRateLimiter(options =>
-{
- 
+{ 
 options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
 {
     if (httpContext.Request.Path.StartsWithSegments("/api/v2/transcripts"))
@@ -285,6 +289,13 @@ options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpC
             Type = "https://tms.local/errors/rate_limit_exceeded"
         }, ct);
     };
+            // M11- Ex 7
+    options.AddFixedWindowLimiter("AuthLimiter", opt =>
+{
+    opt.PermitLimit = 5;
+    opt.Window = TimeSpan.FromMinutes(1);
+    opt.QueueLimit = 0;
+});
 
     // M7 Session 2 — Exercise 4, Step 3: separate concurrency limiter for the
     // transcript endpoint. Token bucket limits how OFTEN you can call; this
@@ -374,6 +385,30 @@ app.UseRateLimiter();
 app.UseMiddleware<V1DeprecationMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
+app.Use(async (context, next) =>
+{
+    context.Response.Headers.Append(
+        "X-Content-Type-Options",
+        "nosniff");
+
+    context.Response.Headers.Append(
+        "X-Frame-Options",
+        "DENY");
+
+    context.Response.Headers.Append(
+        "Referrer-Policy",
+        "strict-origin-when-cross-origin");
+
+    context.Response.Headers.Append(
+        "Content-Security-Policy",
+        "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';");
+
+
+    await next();
+});
+
+
+
 // Minimal API endpoint protected by authorization
 app.MapGet("/api/enrollments/worker-smoke", (EnrollmentWorker worker) =>
 {
@@ -388,6 +423,7 @@ app.MapGet("/api/assessments/results", () => Results.Ok(new
     letterGrade = "A"
 }))
 .RequireAuthorization(); // Forces authentication before execution
+
 app.MapControllers();
 app.MapGet("/api/error", () =>
 {
@@ -415,9 +451,20 @@ if (app.Environment.IsDevelopment())
 if (app.Environment.IsDevelopment())
 {
     using var scope = app.Services.CreateScope();
-    var context = scope.ServiceProvider.GetRequiredService<TmsDbContext>();
 
-    await DataSeeder.SeedAsync(context);
+    var context =
+        scope.ServiceProvider.GetRequiredService<TmsDbContext>();
+
+    var userManager =
+        scope.ServiceProvider.GetRequiredService<UserManager<TmsUser>>();
+
+    var roleManager =
+        scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+
+    await DataSeeder.SeedAsync(
+        context,
+        userManager,
+        roleManager);
 }
 
 app.Run();

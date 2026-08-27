@@ -1,20 +1,22 @@
 using Asp.Versioning;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using TmsApi.Application.Dtos;
 using TmsApi.Application.Interfaces;
+using TmsApi.Infrastructure.Persistence;
 
 namespace TmsApi.Api.Controllers.V2;
 
 [ApiController]
 [Route("api/v{version:apiVersion}/courses")]
 [ApiVersion("2.0")]
-// M7 Session 2 — Exercise 3, Step 5: this handler used to query TmsDbContext
-// directly. It now goes through ICachedCourseService so that repeated reads
-// of the same page are served from HybridCache instead of hitting the DB
-// every time — this is the endpoint the Exercise 3 load tests hit.
+[Authorize(Roles = "Instructor,Admin")]
 public class CoursesController(
+    TmsDbContext context,
     ICourseService courseService,
-    ICachedCourseService cachedCourseService) : ControllerBase
+    ICachedCourseService cachedCourseService,
+    IAuthorizationService authorizationService) : ControllerBase
 {
     [HttpGet]
     public async Task<IActionResult> GetCourses(
@@ -25,7 +27,12 @@ public class CoursesController(
         page = Math.Max(1, page);
         pageSize = Math.Clamp(pageSize, 1, 50);
 
-        var request = new PagedRequest { Page = page, PageSize = pageSize };
+        var request = new PagedRequest
+        {
+            Page = page,
+            PageSize = pageSize
+        };
+
         var result = await cachedCourseService.GetCoursesAsync(request, ct);
 
         var rows = result.Items.Select(c => new
@@ -52,66 +59,17 @@ public class CoursesController(
             links = new
             {
                 self = $"/api/v2/courses?page={page}&pageSize={pageSize}",
+
                 next = result.HasNext
                     ? $"/api/v2/courses?page={page + 1}&pageSize={pageSize}"
                     : (string?)null,
+
                 prev = result.HasPrevious
                     ? $"/api/v2/courses?page={page - 1}&pageSize={pageSize}"
                     : (string?)null,
+
                 enroll = "/api/v2/enrollments"
             }
         });
     }
-
-    // M7 Session 2 — Exercise 3, Step 6: write path. Updates via ICourseService
-    // (uncached — always hits the DB), then invalidates the "courses" tag so the
-    // next GET produces a fresh MISS instead of serving the pre-update cached page.
-    [HttpPut("{id:int}")]
-    [ProducesResponseType(typeof(CourseResponseDto), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> UpdateCourse(
-        int id, UpdateCourseRequest request, CancellationToken ct)
-    {
-        var updated = await courseService.UpdateAsync(id, request, ct);
-        if (updated is null)
-            return NotFound();
-
-        await cachedCourseService.InvalidateCourseCacheAsync(ct);
-
-        return Ok(updated);
-    }
-
-    //
-
-    [HttpDelete("{id:int}")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<IActionResult> DeleteCourse(
-    int id,
-    CancellationToken ct)
-    {
-        //Temporary delay
-        await Task.Delay(900, ct);
-        var result = await courseService.DeleteAsync(id, ct);
-
-        if (!result.Found)
-            return NotFound();
-
-        if (result.HasEnrollments)
-        {
-            return Conflict(new ProblemDetails
-            {
-                Status = StatusCodes.Status409Conflict,
-                Title = "Course deletion rejected",
-                Detail =
-                    $"Course {result.CourseCode} cannot be deleted because it has active student enrollments."
-            });
-        }
-
-        await cachedCourseService.InvalidateCourseCacheAsync(ct);
-
-        return NoContent();
-    }
-
 }

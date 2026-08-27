@@ -28,5 +28,12 @@ public class StudentConfiguration : IEntityTypeConfiguration<Student>
 
         // EX-9: Task 1: Global query filter — soft-deleted are invisible to normal queries.
         builder.HasQueryFilter(s => !s.IsDeleted);
+
+        builder.Property(s => s.UserId)
+    .HasMaxLength(450);
+
+        builder.HasIndex(s => s.UserId)
+            .IsUnique()
+            .HasFilter("\"UserId\" IS NOT NULL");
     }
 }
