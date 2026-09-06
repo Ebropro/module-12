@@ -30,11 +30,14 @@ export const EnrollmentStore = signalStore(
     ),
   })),
 
-  withMethods((
-    store,
-    api = inject(EnrollmentService),
-    sync = inject(LiveSyncService),
-  ) => ({
+withMethods((
+  store,
+  api = inject(EnrollmentService),
+  sync = inject(LiveSyncService),
+) => ({
+  seed(rows: Enrollment[]) {
+    patchState(store, setAllEntities(rows));
+  },
     loadEnrollments: rxMethod<void>(
       pipe(
         tap(() => patchState(store, { isLoading: true, error: null })),

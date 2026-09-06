@@ -1,52 +1,105 @@
-<!-- <div class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-  <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wide mb-4">
-    Enrollment Analytics
-  </h3>
-  <div class="space-y-2">
-    @for (row of data(); track row.id) {
-      <div class="flex items-center gap-3">
-        <span class="w-32 truncate text-sm text-gray-700">{{ row.courseName }}</span>
-        <div
-          class="h-3 rounded-full bg-blue-500"
-          [style.width.%]="row.status === 'Approved' ? 80 : 30"
-        ></div>
-      </div>
-    }
+<div class="analytics-card">
+
+  <div class="analytics-header">
+
+    <div>
+
+      <span>
+        ENROLLMENT BREAKDOWN
+      </span>
+
+      <h3>
+        Course Enrollment Analytics
+      </h3>
+
+    </div>
+
+    <div class="legend">
+
+      <span>
+        <i class="approved"></i>
+        Approved
+      </span>
+
+      <span>
+        <i class="pending"></i>
+        Pending
+      </span>
+
+    </div>
+
   </div>
-</div> -->
 
-<div class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-  <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wide mb-5">
-    Enrollment Analytics
-  </h3>
 
-  <div class="space-y-4">
-    @for (course of breakdown(); track course.courseName) {
-      <div>
-        <div class="flex items-center justify-between mb-1.5">
-          <span class="text-sm font-medium text-gray-700">{{ course.courseName }}</span>
-          <span class="text-xs text-gray-400">{{ course.total }} total</span>
+  <div class="analytics-body">
+
+    @for (
+      course of breakdown();
+      track course.courseName
+    ) {
+
+      <div class="analytics-row">
+
+        <div class="course-heading">
+
+          <span class="course-name">
+            {{ course.courseName }}
+          </span>
+
+          <span class="course-total">
+            {{ course.total }} total
+          </span>
+
         </div>
-        <div class="h-3 w-full rounded-full bg-gray-100 overflow-hidden flex">
+
+
+        <div class="bar">
+
           <div
-            class="h-full bg-green-500 transition-all duration-500"
-            [style.width.%]="course.total > 0 ? (course.approved / course.total) * course.percentOfMax : 0"
+            class="bar-approved"
+            [style.width.%]="
+              course.total > 0
+                ? (course.approved / course.total) * course.percentOfMax
+                : 0
+            "
           ></div>
+
           <div
-            class="h-full bg-amber-400 transition-all duration-500"
-            [style.width.%]="course.total > 0 ? (course.pending / course.total) * course.percentOfMax : 0"
+            class="bar-pending"
+            [style.width.%]="
+              course.total > 0
+                ? (course.pending / course.total) * course.percentOfMax
+                : 0
+            "
           ></div>
+
         </div>
+
+
+        <div class="numbers">
+
+          <span>
+            {{ course.approved }} approved
+          </span>
+
+          <span>
+            {{ course.pending }} pending
+          </span>
+
+        </div>
+
       </div>
+
     }
+
+    @if (breakdown().length === 0) {
+
+      <div class="analytics-empty">
+        No enrollment data available yet.
+      </div>
+
+    }
+
   </div>
 
-  <div class="flex items-center gap-4 mt-5 pt-4 border-t border-gray-100">
-    <span class="flex items-center gap-1.5 text-xs text-gray-500">
-      <span class="h-2.5 w-2.5 rounded-full bg-green-500"></span> Approved
-    </span>
-    <span class="flex items-center gap-1.5 text-xs text-gray-500">
-      <span class="h-2.5 w-2.5 rounded-full bg-amber-400"></span> Pending
-    </span>
-  </div>
 </div>

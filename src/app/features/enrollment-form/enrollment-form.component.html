@@ -1,423 +1,303 @@
-<!--new -->
-<div class="max-w-lg mx-auto px-4 py-10">
-  @if (submitted()) {
-    <div class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm space-y-3">
-      <h3 class="text-lg font-semibold text-gray-900">Enrollment Results</h3>
-      @for (result of results(); track result.courseCode) {
-        <div
-          class="flex items-center justify-between rounded-xl px-4 py-3 text-sm"
-          [class.bg-green-50]="result.success"
-          [class.text-green-700]="result.success"
-          [class.bg-red-50]="!result.success"
-          [class.text-red-700]="!result.success"
-        >
-          <span class="font-medium">{{ result.courseCode }}</span>
-          <span>{{ result.message }}</span>
+<div class="enrollment-page">
+
+  <div class="enrollment-container">
+
+    @if (submitted()) {
+
+      <section class="result-card">
+
+        <div class="result-icon">
+          ✓
         </div>
-      }
-      <p class="text-xs text-gray-400 pt-2">Redirecting to the instructor dashboard...</p>
-    </div>
-  } @else {
-    <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-5 rounded-xl border border-gray-200 bg-white p-6 sm:p-8 shadow-sm">
-      <h2 class="text-xl font-semibold text-gray-900">Enroll a Student</h2>
 
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1.5">Student ID</label>
-        <input
-          formControlName="studentId"
-          placeholder="e.g. 2"
-          class="w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
-        />
-        @if (form.controls.studentId.touched && form.controls.studentId.invalid) {
-          <span class="text-sm text-red-600">Enter a numeric student ID</span>
-        }
-      </div>
+        <h1>
+          Enrollment Submitted
+        </h1>
 
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1.5">Course Code</label>
-        <input
-          formControlName="courseCode"
-          placeholder="e.g. CSE-101"
-          class="w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
-        />
-        @if (form.controls.courseCode.touched && form.controls.courseCode.invalid) {
-          <span class="text-sm text-red-600">Format: XXX-000 (e.g. CSE-101)</span>
-        }
-      </div>
+        <p class="result-description">
+          Your enrollment requests have been processed.
+        </p>
 
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1.5">Term (not sent to server — for your notes only)</label>
-        <input formControlName="term" class="w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm" />
-      </div>
 
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1.5">Notes (not sent to server — for your notes only)</label>
-        <textarea formControlName="notes" rows="2" class="w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm"></textarea>
-      </div>
+        <div class="result-list">
 
-      <div>
-        <h3 class="text-sm font-semibold text-gray-900 mb-2">Backup Courses (also enrolled if added)</h3>
-        <div class="space-y-2">
-          @for (backup of backups.controls; track $index) {
-            <div class="flex gap-2">
-              <input
-                [formControl]="backup"
-                [placeholder]="'Backup course ' + ($index + 1) + ' (e.g. CSE-210)'"
-                class="flex-1 rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm"
-              />
-              <button type="button" (click)="removeBackup($index)" class="rounded-xl border border-gray-300 px-3.5 text-sm text-gray-600 hover:bg-gray-50">Remove</button>
+          @for (result of results(); track result.courseCode) {
+
+            <div
+              class="result-row"
+              [class.success]="result.success"
+              [class.failed]="!result.success"
+            >
+
+              <div class="result-course">
+
+                <span class="result-status-icon">
+                  {{ result.success ? '✓' : '!' }}
+                </span>
+
+                <strong>
+                  {{ result.courseCode }}
+                </strong>
+
+              </div>
+
+              <span>
+                {{ result.message }}
+              </span>
+
             </div>
-          }
-        </div>
-        <button type="button" (click)="addBackup()" class="mt-2 rounded-xl border border-dashed border-gray-300 px-4 py-2 text-sm text-gray-600 hover:border-blue-400 hover:text-blue-600">
-          + Add Backup Course
-        </button>
-      </div>
 
-      <button
-        type="submit"
-        [disabled]="form.invalid || submitting()"
-        class="w-full rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-blue-700 disabled:bg-gray-300"
+          }
+
+        </div>
+
+
+        <p class="redirect-message">
+          Redirecting to the dashboard...
+        </p>
+
+      </section>
+
+    } @else {
+
+      <form
+        [formGroup]="form"
+        (ngSubmit)="submit()"
+        class="enrollment-card"
       >
-        {{ submitting() ? 'Submitting...' : 'Enroll' }}
-      </button>
-    </form>
-  }
-</div>
 
+        <div class="form-header">
 
+          <div class="form-header-icon">
+            +
+          </div>
 
+          <div>
+            <div class="eyebrow">
+              ENROLLMENT
+            </div>
 
+            <h1>
+              Enroll a Student
+            </h1>
 
+            <p>
+              Add a student to one or more courses.
+            </p>
+          </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<!-- 
-<div class="form-container">
-
-  <h2>Course Enrollment</h2>
-
-  @if (submitted()) {
-    <div class="success">
-      Enrollment submitted successfully.
-      Check the console for the payload.
-    </div>
-  } @else {
-
-    <form [formGroup]="form" (ngSubmit)="submit()">
-
-      <div class="form-grid">
-
-        <div class="field">
-          <label for="studentId">Student ID</label>
-          <input
-            id="studentId"
-            formControlName="studentId"
-            placeholder="STU-1234"
-          />
-
-          @if (
-            form.controls.studentId.touched &&
-            form.controls.studentId.invalid
-          ) {
-            <span class="error">
-              Enter a valid Student ID (STU-0000)
-            </span>
-          }
         </div>
 
 
-        <div class="field">
-          <label for="courseId">Course ID</label>
-          <input
-            id="courseId"
-            formControlName="courseId"
-            placeholder="Example: 1"
-          />
-
-          @if (
-            form.controls.courseId.touched &&
-            form.controls.courseId.invalid
-          ) {
-            <span class="error">
-              Course ID is required
-            </span>
-          }
-        </div>
+        <div class="form-body">
 
 
-        <div class="field">
-          <label for="term">Term</label>
-          <input
-            id="term"
-            formControlName="term"
-          />
-        </div>
+          <!-- Student -->
 
+          <div class="field">
 
-        <div class="field full">
-          <label for="notes">Notes</label>
-          <textarea
-            id="notes"
-            formControlName="notes"
-            placeholder="Optional notes">
-          </textarea>
-        </div>
-
-      </div>
-
-
-      <div class="backup-section">
-
-        <h3>Backup Courses</h3>
-
-        @for (backup of backups.controls; track $index) {
-
-          <div class="backup-row">
+            <label for="studentId">
+              Student ID
+              <span>*</span>
+            </label>
 
             <input
-              [formControl]="backup"
-              [placeholder]="'Backup course ' + ($index + 1)"
+              id="studentId"
+              formControlName="studentId"
+              placeholder="e.g. 101"
+              autocomplete="off"
             />
 
+            @if (
+              form.controls.studentId.touched &&
+              form.controls.studentId.invalid
+            ) {
+
+              <span class="field-error">
+                Enter a valid numeric student ID.
+              </span>
+
+            }
+
+          </div>
+
+
+          <!-- Course -->
+
+          <div class="field">
+
+            <label for="courseCode">
+              Course Code
+              <span>*</span>
+            </label>
+
+            <input
+              id="courseCode"
+              formControlName="courseCode"
+              placeholder="e.g. CSE-101"
+              autocomplete="off"
+            />
+
+            @if (
+              form.controls.courseCode.touched &&
+              form.controls.courseCode.invalid
+            ) {
+
+              <span class="field-error">
+                Use the format XXX-000, for example CSE-101.
+              </span>
+
+            }
+
+          </div>
+
+
+          <div class="form-grid">
+
+            <div class="field">
+
+              <label for="term">
+                Term
+              </label>
+
+              <input
+                id="term"
+                formControlName="term"
+              />
+
+              <span class="field-hint">
+                For your notes only.
+              </span>
+
+            </div>
+
+
+            <div class="field">
+
+              <label for="notes">
+                Notes
+              </label>
+
+              <textarea
+                id="notes"
+                formControlName="notes"
+                rows="1"
+                placeholder="Optional"
+              ></textarea>
+
+            </div>
+
+          </div>
+
+
+          <!-- Backup courses -->
+
+          <section class="backup-section">
+
+            <div class="backup-header">
+
+              <div>
+
+                <h2>
+                  Backup Courses
+                </h2>
+
+                <p>
+                  These will also be submitted if added.
+                </p>
+
+              </div>
+
+              <button
+                type="button"
+                class="add-backup"
+                (click)="addBackup()"
+              >
+                + Add
+              </button>
+
+            </div>
+
+
+            @if (backups.length === 0) {
+
+              <div class="backup-empty">
+                No backup courses added.
+              </div>
+
+            }
+
+
+            <div class="backup-list">
+
+              @for (
+                backup of backups.controls;
+                track $index
+              ) {
+
+                <div class="backup-row">
+
+                  <span class="backup-number">
+                    {{ $index + 1 }}
+                  </span>
+
+                  <input
+                    [formControl]="backup"
+                    [placeholder]="
+                      'Backup course ' + ($index + 1) +
+                      ' — e.g. CSE-210'
+                    "
+                  />
+
+                  <button
+                    type="button"
+                    class="remove-backup"
+                    (click)="removeBackup($index)"
+                    aria-label="Remove backup course"
+                  >
+                    ×
+                  </button>
+
+                </div>
+
+              }
+
+            </div>
+
+          </section>
+
+
+          <div class="form-footer">
+
+            <div class="required-note">
+              <span>*</span>
+              Required fields
+            </div>
+
             <button
-              type="button"
-              class="remove"
-              (click)="removeBackup($index)">
-              Remove
+              type="submit"
+              class="submit-button"
+              [disabled]="form.invalid || submitting()"
+            >
+
+              @if (submitting()) {
+                <span class="button-spinner"></span>
+                Submitting...
+              } @else {
+                Submit Enrollment
+                <span>→</span>
+              }
+
             </button>
 
           </div>
 
-        }
-
-        <button
-          type="button"
-          class="secondary"
-          (click)="addBackup()">
-          + Add Backup Course
-        </button>
-
-      </div>
-
-
-      <button
-        type="submit"
-        class="submit"
-        [disabled]="form.invalid">
-        Confirm Enrollment
-      </button>
-
-    </form>
-
-  }
-
-</div> -->
-
-<!-- 3
- <div class="max-w-md mx-auto px-4 py-10">
-  @if (submitted()) {
-    <div class="rounded-xl border border-green-200 bg-green-50 p-6 text-green-700 shadow-sm">
-      Enrollment submitted — redirecting to the instructor dashboard...
-    </div>
-  } @else {
-    <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-5 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-      <h2 class="text-xl font-semibold text-gray-900">Enroll a Student</h2>
-
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1.5">Student ID</label>
-        <input
-          formControlName="studentId"
-          placeholder="e.g. 2"
-          class="w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
-        />
-        @if (form.controls.studentId.touched && form.controls.studentId.invalid) {
-          <span class="text-sm text-red-600">Enter a numeric student ID</span>
-        }
-      </div>
-
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1.5">Course Code</label>
-        <input
-          formControlName="courseCode"
-          placeholder="e.g. CSE-101"
-          class="w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
-        />
-        @if (form.controls.courseCode.touched && form.controls.courseCode.invalid) {
-          <span class="text-sm text-red-600">Format: XXX-000 (e.g. CSE-101)</span>
-        }
-      </div>
-
-      @if (serverError()) {
-        <div class="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-600">
-          {{ serverError() }}
         </div>
-      }
 
-      <button
-        type="submit"
-        [disabled]="submitting()"
-        class="w-full rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-all hover:bg-blue-700 disabled:bg-gray-300"
-      >
-        {{ submitting() ? 'Submitting...' : 'Enroll' }}
-      </button>
-    </form>
-  }
-</div> 
+      </form>
 
- -->
+    }
 
+  </div>
 
-
-
-
-
-
-
- 
-
-
-
-<!-- 2 -->
-
-
-
-<!-- 
-<div class="form-container">
-
-  <h2>Course Enrollment</h2>
-
-  @if (submitted()) {
-    <div class="success">
-      Enrollment submitted successfully.
-      Check the console for the payload.
-    </div>
-  } @else {
-
-    <form [formGroup]="form" (ngSubmit)="submit()">
-
-      <div class="field">
-        <label for="studentId">Student ID</label>
-        <input
-          id="studentId"
-          formControlName="studentId"
-          placeholder="STU-1234"
-        />
-
-        @if (
-          form.controls.studentId.touched &&
-          form.controls.studentId.invalid
-        ) {
-          <span class="error">
-            Enter a valid Student ID (STU-0000)
-          </span>
-        }
-      </div>
-
-
-      <div class="field">
-        <label for="courseId">Course ID</label>
-        <input
-          id="courseId"
-          formControlName="courseId"
-          placeholder="Example: 1"
-        />
-
-        @if (
-          form.controls.CourseId.touched &&
-          form.controls.courseId.invalid
-        ) {
-          <span class="error">
-            Course ID is required
-          </span>
-        }
-      </div>
-
-
-      <div class="field">
-        <label for="term">Term</label>
-        <input id="term" formControlName="term" />
-      </div>
-
-
-      <div class="field">
-        <label for="notes">Notes</label>
-        <textarea
-          id="notes"
-          formControlName="notes"
-          placeholder="Optional notes">
-        </textarea>
-      </div>
-
-
-      <h3>Backup Courses</h3>
-
-      @for (backup of backups.controls; track $index) {
-        <div class="backup-row">
-
-          <input
-            [formControl]="backup"
-            [placeholder]="'Backup course ' + ($index + 1)"
-          />
-
-          <button
-            type="button"
-            class="remove"
-            (click)="removeBackup($index)">
-            Remove
-          </button>
-
-        </div>
-      }
-
-
-      <button
-        type="button"
-        class="secondary"
-        (click)="addBackup()">
-        + Add Backup Course
-      </button>
-
-
-      <button
-        type="submit"
-        class="submit"
-        [disabled]="form.invalid">
-        Confirm Enrollment
-      </button>
-
-    </form>
-  }
-
-</div> 
- -->
+</div>

@@ -1,159 +1,229 @@
-<div class="min-h-screen bg-gray-50">
+<div class="course-page">
 
-  <!-- Navigation -->
-  <header class="border-b border-gray-200 bg-white">
-    <div
-      class="mx-auto flex max-w-5xl items-center justify-between px-6 py-4"
-    >
+  <header class="course-nav">
 
-      <a
-        routerLink="/"
-        class="text-2xl font-bold text-gray-900"
-      >
-        TMS
+    <div class="nav-inner">
+
+      <a routerLink="/" class="brand">
+        <span class="brand-mark">T</span>
+        <span>TMS</span>
       </a>
 
-      <a
-        routerLink="/"
-        class="text-sm font-medium text-gray-600 hover:text-blue-600"
-      >
+      <a routerLink="/" class="back-link">
+        <span>←</span>
         Back to Courses
       </a>
 
     </div>
+
   </header>
 
 
-  <main class="mx-auto max-w-5xl px-6 py-10">
+  <main class="course-main">
 
     @if (loading()) {
 
-      <div class="rounded-xl border border-gray-200 bg-white p-8 shadow-sm">
+      <section class="loading-card">
 
-        <p class="text-gray-500">
+        <div class="loading-icon">
+          <span></span>
+        </div>
+
+        <h2>
           Loading course...
+        </h2>
+
+        <p>
+          Please wait while we retrieve the course details.
         </p>
 
-      </div>
+      </section>
 
     } @else if (notFound()) {
 
-      <div class="rounded-xl border border-red-200 bg-white p-8 shadow-sm">
+      <section class="not-found-card">
 
-        <h1 class="text-xl font-semibold text-gray-900">
+        <div class="not-found-icon">
+          !
+        </div>
+
+        <h1>
           Course Not Found
         </h1>
 
-        <p class="mt-2 text-gray-600">
+        <p>
           The requested course could not be found.
+          It may have been removed from the catalogue.
         </p>
 
-        <a
-          routerLink="/"
-          class="mt-6 inline-block rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-700"
-        >
+        <a routerLink="/" class="primary-button">
           Back to Courses
         </a>
 
-      </div>
+      </section>
 
     } @else if (course(); as c) {
 
-      <!-- Course header -->
-      <div class="rounded-2xl bg-white p-8 shadow-sm">
+      <section class="detail-card">
 
-        <span
-          class="inline-block rounded-full bg-blue-50 px-3 py-1 text-sm font-semibold text-blue-700"
-        >
-          {{ c.code }}
-        </span>
+        <div class="detail-header">
 
-        <h1 class="mt-4 text-3xl font-bold text-gray-900">
+          <div class="course-code">
+            {{ c.code }}
+          </div>
+
+          <span
+            class="availability"
+            [class.full]="
+              c.enrollmentCount >= c.maxCapacity
+            "
+          >
+            {{
+              c.enrollmentCount >= c.maxCapacity
+                ? 'Course Full'
+                : 'Accepting Enrollments'
+            }}
+          </span>
+
+        </div>
+
+
+        <h1>
           {{ c.title }}
         </h1>
 
-        <p class="mt-4 text-gray-600">
-          Explore this course and enroll when you are ready to begin.
+        <p class="description">
+          Explore this course and enroll when you're ready
+          to continue your academic journey.
         </p>
 
 
-        <!-- Course information -->
-        <div class="mt-8 grid gap-4 sm:grid-cols-3">
+        <div class="metrics">
 
-          <div class="rounded-xl bg-gray-50 p-5">
+          <article class="metric">
 
-            <p class="text-sm text-gray-500">
-              Maximum Capacity
-            </p>
+            <span class="metric-icon">
+              #
+            </span>
 
-            <p class="mt-1 text-2xl font-semibold text-gray-900">
-              {{ c.maxCapacity }}
-            </p>
+            <div>
+              <span>
+                Course Capacity
+              </span>
+
+              <strong>
+                {{ c.maxCapacity }}
+              </strong>
+            </div>
+
+          </article>
+
+
+          <article class="metric">
+
+            <span class="metric-icon">
+              ◎
+            </span>
+
+            <div>
+              <span>
+                Enrolled
+              </span>
+
+              <strong>
+                {{ c.enrollmentCount }}
+              </strong>
+            </div>
+
+          </article>
+
+
+          <article class="metric">
+
+            <span class="metric-icon green">
+              ✓
+            </span>
+
+            <div>
+              <span>
+                Available Seats
+              </span>
+
+              <strong>
+                {{ c.maxCapacity - c.enrollmentCount }}
+              </strong>
+            </div>
+
+          </article>
+
+        </div>
+
+
+        <div class="capacity-section">
+
+          <div class="capacity-heading">
+
+            <span>
+              Enrollment Capacity
+            </span>
+
+            <strong>
+              {{
+                c.maxCapacity > 0
+                  ? ((c.enrollmentCount / c.maxCapacity) * 100 | number:'1.0-0')
+                  : 0
+              }}%
+            </strong>
 
           </div>
 
+          <div class="capacity-track">
 
-          <div class="rounded-xl bg-gray-50 p-5">
-
-            <p class="text-sm text-gray-500">
-              Enrolled Students
-            </p>
-
-            <p class="mt-1 text-2xl font-semibold text-gray-900">
-              {{ c.enrollmentCount }}
-            </p>
-
-          </div>
-
-
-          <div class="rounded-xl bg-gray-50 p-5">
-
-            <p class="text-sm text-gray-500">
-              Available Seats
-            </p>
-
-            <p class="mt-1 text-2xl font-semibold text-gray-900">
-              {{ c.maxCapacity - c.enrollmentCount }}
-            </p>
+            <div
+              class="capacity-bar"
+              [style.width.%]="
+                c.maxCapacity > 0
+                  ? (c.enrollmentCount / c.maxCapacity) * 100
+                  : 0
+              "
+            ></div>
 
           </div>
 
         </div>
 
 
-        <!-- Enrollment -->
-        <div class="mt-8 border-t border-gray-200 pt-8">
+        <div class="enrollment-action">
 
           @if (isLoggedIn()) {
 
             <a
               [routerLink]="['/enroll']"
               [queryParams]="{ courseCode: c.code }"
-              class="inline-flex rounded-lg bg-blue-600 px-6 py-3 font-medium text-white hover:bg-blue-700"
+              class="enroll-button"
             >
               Enroll in This Course
+              <span>→</span>
             </a>
 
           } @else {
 
             <a
               routerLink="/login"
-              class="inline-flex rounded-lg bg-blue-600 px-6 py-3 font-medium text-white hover:bg-blue-700"
+              class="enroll-button"
             >
               Login to Enroll
+              <span>→</span>
             </a>
 
           }
 
         </div>
 
-      </div>
+      </section>
 
     }
 
   </main>
 
 </div>
-
-
-

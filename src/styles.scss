@@ -1,8 +1,8 @@
-// Include theming for Angular Material with `mat.theme()`.
 @use '@angular/material' as mat;
 
 html {
   height: 100%;
+
   @include mat.theme(
     (
       color: (
@@ -15,112 +15,94 @@ html {
   );
 }
 
+:root {
+  --tms-primary: #4f46e5;
+  --tms-primary-dark: #4338ca;
+  --tms-primary-light: #eef2ff;
+
+  --tms-blue: #2563eb;
+  --tms-blue-light: #eff6ff;
+
+  --tms-success: #059669;
+  --tms-success-light: #ecfdf5;
+
+  --tms-warning: #d97706;
+  --tms-warning-light: #fffbeb;
+
+  --tms-danger: #dc2626;
+  --tms-danger-light: #fef2f2;
+
+  --tms-bg: #f8fafc;
+  --tms-surface: #ffffff;
+
+  --tms-text: #0f172a;
+  --tms-text-secondary: #475569;
+  --tms-text-muted: #94a3b8;
+
+  --tms-border: #e2e8f0;
+  --tms-border-dark: #cbd5e1;
+
+  --tms-radius-sm: 8px;
+  --tms-radius-md: 12px;
+  --tms-radius-lg: 16px;
+  --tms-radius-xl: 20px;
+
+  --tms-shadow-sm:
+    0 1px 3px rgba(15, 23, 42, 0.05);
+
+  --tms-shadow-md:
+    0 8px 25px rgba(15, 23, 42, 0.07);
+
+  --tms-shadow-lg:
+    0 20px 50px rgba(15, 23, 42, 0.12);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
+
 body {
   color-scheme: light;
-  background-color: var(--mat-sys-surface);
-  color: var(--mat-sys-on-surface);
-  font: var(--mat-sys-body-medium);
-  font-family: 'Inter', 'Segoe UI', sans-serif;
-  margin: 0;
-  height: 100%;
+
+  background: var(--tms-bg);
+  color: var(--tms-text);
+
+  font-family:
+    'Inter',
+    'Segoe UI',
+    Roboto,
+    Helvetica,
+    Arial,
+    sans-serif;
+
+  font-size: 14px;
+  line-height: 1.5;
+
   overflow-x: hidden;
 }
 
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
 
+button {
+  -webkit-tap-highlight-color: transparent;
+}
 
+a {
+  color: inherit;
+}
 
-
-
-
-
-
-
-
-
-
-
-
-
-// // Include theming for Angular Material with `mat.theme()`.
-// // This Sass mixin will define CSS variables that are used for styling Angular Material
-// // components according to the Material 3 design spec.
-// // Learn more about theming and how to use it for your application's
-// // custom components at https://material.angular.dev/guide/theming
-// @use '@angular/material' as mat;
-
-// html {
-//   height: 100%;
-//   @include mat.theme(
-//     (
-//       color: (
-//         primary: mat.$azure-palette,
-//         tertiary: mat.$blue-palette,
-//       ),
-//       typography: Roboto,
-//       density: 0,
-//     )
-//   );
-// }
-
-// body {
-//   // Default the application to a light color theme. This can be changed to
-//   // `dark` to enable the dark color theme, or to `light dark` to defer to the
-//   // user's system settings.
-//   color-scheme: light;
-
-//   // Set a default background, font and text colors for the application using
-//   // Angular Material's system-level CSS variables. Learn more about these
-//   // variables at https://material.angular.dev/guide/system-variables
-//   background-color: var(--mat-sys-surface);
-//   color: var(--mat-sys-on-surface);
-//   font: var(--mat-sys-body-medium);
-
-//   // Reset the user agent margin.
-//   margin: 0;
-//   height: 100%;
-// }
-// /* You can add global styles to this file, and also import other style files */
-// html,
-// body {
-//   margin: 0;
-
-//   min-height: 100%;
-// }
-
-// body {
-//   font-family: 'Inter', 'Segoe UI', sans-serif;
-
-//   background: radial-gradient(circle at top, #1e3a8a, #020617 60%);
-
-//   color: white;
-
-//   overflow-x: hidden;
-// }
-
-// body::before {
-//   content: '';
-
-//   position: fixed;
-
-//   inset: 0;
-
-//   background-image: radial-gradient(white 1px, transparent 1px);
-
-//   background-size: 80px 80px;
-
-//   opacity: 0.25;
-
-//   animation: starsMove 40s linear infinite;
-
-//   pointer-events: none;
-// }
-
-// @keyframes starsMove {
-//   from {
-//     transform: translateY(0);
-//   }
-
-//   to {
-//     transform: translateY(-300px);
-//   }
-// }
+::selection {
+  background: #c7d2fe;
+  color: #312e81;
+}

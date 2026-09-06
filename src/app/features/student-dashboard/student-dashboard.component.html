@@ -1,48 +1,279 @@
-<div class="dashboard-container">
+<div class="dashboard">
 
-  <!-- Student Profile Section -->
-  <section class="student-summary">
+  <!-- =========================================================
+       TOP WELCOME SECTION
+       ========================================================= -->
 
-  <div class="summary-heading">
-    <h1>
-      Welcome, {{ studentName() }}
-    </h1>
+  <section class="welcome-card">
 
-    <p>
-      Browse available courses and manage your enrollment.
-    </p>
-  </div>
+    <div class="welcome-content">
 
-  <div class="status">
+      <div class="welcome-badge">
+        <span class="badge-dot"></span>
+        Student Portal
+      </div>
 
-    <div class="status-card">
-      <span>Credits Earned</span>
+      <h1>
+        Welcome back, {{ studentName() }}
+      </h1>
 
-      <strong>
-        {{ earnedCredits() }}
-      </strong>
+      <p>
+        Explore available courses, track your academic progress,
+        and manage your enrollment.
+      </p>
+
     </div>
 
-    <div class="status-card graduation-card">
+    <div class="welcome-decoration">
+      <div class="decoration-circle circle-one"></div>
+      <div class="decoration-circle circle-two"></div>
+      <div class="decoration-icon">
+        🎓
+      </div>
+    </div>
 
-      <span>Graduation Status</span>
+  </section>
 
-      <strong
-        [class.graduated]="graduationStatus() === 'Eligible for Graduation'">
 
-        {{ graduationStatus() }}
+  <!-- =========================================================
+       QUICK STATS
+       ========================================================= -->
 
-      </strong>
+  <section class="stats-grid">
 
-      @if (graduationStatus() === 'Eligible for Graduation') {
+    <article class="stat-card">
 
-        <div class="graduation-celebration">
+      <div class="stat-icon blue">
+        <span>▣</span>
+      </div>
 
-          🎓 🎉
+      <div class="stat-content">
+        <span class="stat-label">
+          Credits Earned
+        </span>
+
+        <strong class="stat-value">
+          {{ earnedCredits() }}
+        </strong>
+
+        <span class="stat-meta">
+          of 120 required
+        </span>
+      </div>
+
+    </article>
+
+
+    <article class="stat-card">
+
+      <div class="stat-icon green">
+        <span>✓</span>
+      </div>
+
+      <div class="stat-content">
+
+        <span class="stat-label">
+          Academic Status
+        </span>
+
+        <strong
+          class="stat-value status-value"
+          [class.success]="graduationStatus() === 'Eligible for Graduation'"
+        >
+          {{ graduationStatus() }}
+        </strong>
+
+        <span class="stat-meta">
+          Keep progressing
+        </span>
+
+      </div>
+
+    </article>
+
+
+    <article class="stat-card">
+
+      <div class="stat-icon purple">
+        <span>▦</span>
+      </div>
+
+      <div class="stat-content">
+
+        <span class="stat-label">
+          Available Courses
+        </span>
+
+        <strong class="stat-value">
+          {{ courseCount() }}
+        </strong>
+
+        <span class="stat-meta">
+          courses matching your search
+        </span>
+
+      </div>
+
+    </article>
+
+
+    <button
+      type="button"
+      class="register-card"
+      (click)="registerForClass()"
+    >
+
+      <div class="register-icon">
+        +
+      </div>
+
+      <div>
+        <strong>
+          Register for a Class
+        </strong>
+
+        <span>
+          Add 3 academic credits
+        </span>
+      </div>
+
+      <span class="register-arrow">
+        →
+      </span>
+
+    </button>
+
+  </section>
+
+
+  <!-- =========================================================
+       GRADUATION MESSAGE
+       ========================================================= -->
+
+  @if (graduationStatus() === 'Eligible for Graduation') {
+
+    <section class="graduation-banner">
+
+      <div class="graduation-icon">
+        🎓
+      </div>
+
+      <div>
+        <strong>
+          Congratulations!
+        </strong>
+
+        <p>
+          You've reached the required credits and are eligible
+          for graduation.
+        </p>
+      </div>
+
+    </section>
+
+  }
+
+
+  <!-- =========================================================
+       COURSE CATALOG
+       ========================================================= -->
+
+  <section class="catalog-section">
+
+    <div class="section-header">
+
+      <div>
+
+        <div class="section-eyebrow">
+          COURSE CATALOG
+        </div>
+
+        <h2>
+          Explore Courses
+        </h2>
+
+        <p>
+          Find a course that's right for your academic journey.
+        </p>
+
+      </div>
+
+
+      <div class="catalog-controls">
+
+        <span class="course-count">
+          {{ courseCount() }}
+          {{ courseCount() === 1 ? 'course' : 'courses' }}
+        </span>
+
+        <div class="search-box">
+
+          <span class="search-icon">
+            ⌕
+          </span>
+
+          <input
+            type="search"
+            placeholder="Search courses..."
+            [value]="searchTerm()"
+            (input)="onSearch($event)"
+            aria-label="Search courses"
+          />
+
+          @if (searchTerm()) {
+
+            <button
+              type="button"
+              class="clear-search"
+              (click)="searchTerm.set('')"
+              aria-label="Clear search"
+            >
+              ×
+            </button>
+
+          }
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <div class="course-grid">
+
+      @for (course of filteredCourses(); track course.id) {
+
+        <tms-course-card
+          [course]="course"
+          (enrollClicked)="handleEnroll($event)"
+        />
+
+      }
+
+      @empty {
+
+        <div class="empty-state">
+
+          <div class="empty-state-icon">
+            🔎
+          </div>
+
+          <h3>
+            No courses found
+          </h3>
 
           <p>
-            Congratulations! You are ready to graduate.
+            We couldn't find any courses matching
+            "{{ searchTerm() }}".
           </p>
+
+          <button
+            type="button"
+            (click)="searchTerm.set('')"
+          >
+            Clear Search
+          </button>
 
         </div>
 
@@ -50,125 +281,45 @@
 
     </div>
 
-  </div>
-
-
-
-
-    <button
-      class="register-button"
-      (click)="registerForClass()">
-
-      Register for a Class (+3 credits)
-
-    </button>
-
-
   </section>
 
 
+  <!-- =========================================================
+       ENROLLMENT TOAST
+       ========================================================= -->
 
-
-  <!-- Course Catalog -->
-  <section class="catalog-section">
-
-
-
-<div class="catalog-header">
-  <h2>Course Catalog</h2>
-
-  <div class="catalog-actions">
-    <span class="course-count">
-      {{ courseCount() }}
-      {{ courseCount() === 1 ? 'course' : 'courses' }}
-    </span>
-
-    <div class="search-wrapper">
-      <span class="search-icon" aria-hidden="true">🔍</span>
-
-      <input
-        type="text"
-        placeholder="Search courses..."
-        [value]="searchTerm()"
-        (input)="onSearch($event)"
-        class="course-search"
-      />
-    </div>
-  </div>
-</div>
-
-
-<div class="grid">
-
-  @for (course of filteredCourses(); track course.id) {
-
-    <tms-course-card
-  [course]="course"
-  (enrollClicked)="handleEnroll($event)"
-  />
-  }
-
-  @empty {
-
-    <div class="no-results">
-
-      <div class="no-results-icon">🔍</div>
-
-      <strong>No courses found</strong>
-
-      <p>
-        Try searching by course name or course code.
-      </p>
-
-    </div>
-
-  }
-
-</div>
-
-
-  </section>
-
-
-
-
-  <!-- Enrollment Feedback -->
   @if (showEnrollmentToast() && selectedCourse(); as picked) {
 
     <div class="enrollment-toast">
 
       <div class="toast-icon">
-        ✅
+        ✓
       </div>
 
-
-      <div>
+      <div class="toast-content">
 
         <strong>
           Enrollment Request Sent
         </strong>
 
-
         <p>
           {{ picked.title }}
-          ({{ picked.code }})
+          · {{ picked.code }}
         </p>
 
       </div>
 
+      <button
+        type="button"
+        class="toast-close"
+        (click)="showEnrollmentToast.set(false)"
+        aria-label="Close notification"
+      >
+        ×
+      </button>
 
     </div>
 
   }
 
-
-</div>
-<div class="flex items-center justify-between mb-4">
-  <h2 class="text-xl font-semibold text-gray-900 tracking-tight">Course Catalog</h2>
-  <input
-    [value]="searchTerm()"
-    (input)="searchTerm.set($any($event.target).value)"
-    placeholder="Search courses..."
-    class="rounded-xl border border-black-300 px-3.5 py-2 text-sm w-56 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
-  />
 </div>

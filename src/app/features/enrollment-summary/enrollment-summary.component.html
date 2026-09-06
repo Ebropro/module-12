@@ -1,4 +1,38 @@
-<div class="summary-widget">
-  <h3>Dashboard Summary</h3>
-  <p>{{ store.pendingCount() }} Pending</p>
+<div class="summary-card">
+
+  <div class="summary-icon">
+    ◎
+  </div>
+
+  <div class="summary-content">
+
+    <span class="summary-label">
+      PENDING ENROLLMENTS
+    </span>
+
+    <strong>
+      {{ store.pendingCount() }}
+    </strong>
+
+    <p>
+      {{
+        store.pendingCount() === 1
+          ? 'request requires your attention'
+          : 'requests require your attention'
+      }}
+    </p>
+
+  </div>
+
+  <div
+    class="summary-status"
+    [class.has-pending]="store.pendingCount() > 0"
+  >
+    {{
+      store.pendingCount() > 0
+        ? 'Action needed'
+        : 'All caught up'
+    }}
+  </div>
+
 </div>

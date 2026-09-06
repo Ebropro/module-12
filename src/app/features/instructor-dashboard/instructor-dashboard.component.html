@@ -1,103 +1,225 @@
-<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+<div class="instructor-page">
 
-  <tms-enrollment-summary />
+  <header class="page-header">
 
-  <tms-enrollment-list />
+    <div>
 
+      <div class="eyebrow">
+        INSTRUCTOR PORTAL
+      </div>
 
-  <!-- Course Management -->
-  <section class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+      <h1>
+        Instructor Dashboard
+      </h1>
 
-    <div class="mb-5">
-      <h2 class="text-xl font-semibold text-gray-900">
-        Course Management
-      </h2>
-
-      <p class="mt-1 text-sm text-gray-500">
-        Manage courses in the catalog.
+      <p>
+        Review enrollments, manage courses, and monitor activity.
       </p>
+
     </div>
 
+  </header>
 
-    <div class="space-y-3">
 
-      @for (course of courseStore.entities(); track course.id) {
+  <main class="dashboard-content">
 
-        <div
-          class="flex items-center justify-between rounded-lg border border-gray-200 p-4"
-        >
+    <!-- Enrollment summary -->
 
-          <div>
-            <h3 class="font-semibold text-gray-900">
-              {{ course.title }}
-            </h3>
+    <section class="summary-section">
+      <tms-enrollment-summary />
+    </section>
 
-            <p class="text-sm text-gray-500">
-              {{ course.code }}
-              ·
-              {{ course.enrollmentCount }} /
-              {{ course.maxCapacity }} enrolled
-            </p>
+
+    <!-- Enrollment management -->
+
+    <section class="panel">
+
+      <div class="panel-header">
+
+        <div>
+
+          <span class="panel-eyebrow">
+            ENROLLMENTS
+          </span>
+
+          <h2>
+            Enrollment Requests
+          </h2>
+
+          <p>
+            Review and approve pending student enrollments.
+          </p>
+
+        </div>
+
+      </div>
+
+      <tms-enrollment-list />
+
+    </section>
+
+
+    <!-- Course Management -->
+
+    <section class="panel">
+
+      <div class="panel-header">
+
+        <div>
+
+          <span class="panel-eyebrow">
+            CATALOG
+          </span>
+
+          <h2>
+            Course Management
+          </h2>
+
+          <p>
+            Manage the courses currently available in the catalogue.
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <div class="course-management">
+
+        @for (
+          course of courseStore.entities();
+          track course.id
+        ) {
+
+          <article class="managed-course">
+
+            <div class="managed-course-info">
+
+              <span class="managed-code">
+                {{ course.code }}
+              </span>
+
+              <div>
+
+                <h3>
+                  {{ course.title }}
+                </h3>
+
+                <p>
+                  {{ course.enrollmentCount }}
+                  /
+                  {{ course.maxCapacity }}
+                  students enrolled
+                </p>
+
+              </div>
+
+            </div>
+
+
+            <div class="managed-status">
+
+              @if (
+                course.enrollmentCount >= course.maxCapacity
+              ) {
+
+                <span class="status full">
+                  Full
+                </span>
+
+              } @else {
+
+                <span class="status open">
+                  Open
+                </span>
+
+              }
+
+
+              @if (auth.hasRole("Admin")) {
+
+                <button
+                  type="button"
+                  class="delete-button"
+                  (click)="courseStore.deleteCourse(course.id)"
+                >
+                  Delete
+                </button>
+
+              }
+
+            </div>
+
+          </article>
+
+        }
+
+        @empty {
+
+          <div class="empty-management">
+            No courses found.
           </div>
 
+        }
 
-@if (auth.hasRole("Admin")) {
-  <button
-    type="button"
-    class="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
-    (click)="courseStore.deleteCourse(course.id)"
-  >
-    Delete
-  </button>
-}
+      </div>
+
+    </section>
 
 
+    <!-- Analytics -->
+
+    <section class="panel analytics-panel">
+
+      <div class="panel-header">
+
+        <div>
+
+          <span class="panel-eyebrow">
+            ANALYTICS
+          </span>
+
+          <h2>
+            Enrollment Analytics
+          </h2>
+
+          <p>
+            Overview of enrollment activity by course.
+          </p>
+
+        </div>
+
+      </div>
+
+
+      @defer (on viewport; prefetch on idle(500)) {
+
+        <tms-analytics-chart
+          [data]="enrollmentStore.entities()"
+        />
+
+      } @placeholder {
+
+        <div class="analytics-placeholder">
+          <span>Scroll to load analytics</span>
+        </div>
+
+      } @loading (minimum 500ms) {
+
+        <div class="analytics-placeholder">
+          Loading analytics...
+        </div>
+
+      } @error {
+
+        <div class="analytics-error">
+          Failed to load analytics. Please check your connection.
         </div>
 
       }
 
-      @empty {
+    </section>
 
-        <p class="text-sm text-gray-500">
-          No courses found.
-        </p>
-
-      }
-
-    </div>
-
-  </section>
-
-
-  <!-- Existing Analytics -->
-  <div class="chart-section">
-
-    @defer (on viewport; prefetch on idle(500)) {
-
-      <tms-analytics-chart
-        [data]="enrollmentStore.entities()"
-      />
-
-    } @placeholder {
-
-      <div class="rounded-xl border border-dashed border-gray-300 bg-gray-50 p-8 text-center text-sm text-gray-500">
-        Scroll down to view analytics...
-      </div>
-
-    } @loading (minimum 500ms) {
-
-      <div class="rounded-xl border border-gray-200 bg-white p-8 text-center text-sm text-gray-500 shadow-sm">
-        Downloading chart engine...
-      </div>
-
-    } @error {
-
-      <div class="rounded-xl border border-red-200 bg-red-50 p-8 text-center text-sm text-red-600">
-        Failed to load chart. Check your connection.
-      </div>
-
-    }
-
-  </div>
+  </main>
 
 </div>

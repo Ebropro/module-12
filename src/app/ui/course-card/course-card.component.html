@@ -1,25 +1,131 @@
-<div class="card">
-  <h3>
-    <a [routerLink]="['/courses', course().id]">{{ course().title }}</a>
-    ({{ course().code }})
-  </h3>
-  <p>
-    Enrolled {{ course().enrollmentCount }} of {{ course().maxCapacity }} seats
-  </p>
-  <span
-    class="badge"
-    [class.closed]="course().enrollmentCount >= course().maxCapacity"
-  >
-    {{ course().enrollmentCount >= course().maxCapacity ? "Full" : "Accepting enrollments" }}
-  </span>
-  <button
-    (click)="enrollClicked.emit(course())"
-    [disabled]="course().enrollmentCount >= course().maxCapacity"
-  >
-    Enroll
-  </button>
+<article class="course-card">
+
+  <div
+    class="course-accent"
+    [class]="badgeColor()"
+  ></div>
+
+  <div class="course-content">
+
+    <div class="course-top">
+
+      <span class="course-code">
+        {{ course().code }}
+      </span>
+
+      @if (course().enrollmentCount >= course().maxCapacity) {
+
+        <span class="status full">
+          Full
+        </span>
+
+      } @else {
+
+        <span class="status open">
+          Open
+        </span>
+
+      }
+
+    </div>
 
 
-</div>
+    <div class="course-icon">
+      {{ initials() }}
+    </div>
 
 
+    <h3 class="course-title">
+
+      <a [routerLink]="['/courses', course().id]">
+        {{ course().title }}
+      </a>
+
+    </h3>
+
+
+    <div class="course-capacity">
+
+      <div class="capacity-header">
+
+        <span>
+          Enrollment
+        </span>
+
+        <strong>
+          {{ course().enrollmentCount }}
+          /
+          {{ course().maxCapacity }}
+        </strong>
+
+      </div>
+
+
+      <div class="capacity-track">
+
+        <div
+          class="capacity-bar"
+          [class.danger]="
+            course().enrollmentCount / course().maxCapacity >= 0.9
+          "
+          [class.warning]="
+            course().enrollmentCount / course().maxCapacity >= 0.7 &&
+            course().enrollmentCount / course().maxCapacity < 0.9
+          "
+          [class.good]="
+            course().enrollmentCount / course().maxCapacity < 0.7
+          "
+          [style.width.%]="
+            (course().enrollmentCount / course().maxCapacity) * 100
+          "
+        ></div>
+
+      </div>
+
+      <span class="capacity-label">
+
+        {{
+          course().maxCapacity - course().enrollmentCount
+        }}
+
+        seats available
+
+      </span>
+
+    </div>
+
+
+    <div class="course-footer">
+
+      <a
+        [routerLink]="['/courses', course().id]"
+        class="details-link"
+      >
+        View details
+      </a>
+
+      <button
+        type="button"
+        class="enroll-button"
+        (click)="enrollClicked.emit(course())"
+        [disabled]="
+          course().enrollmentCount >= course().maxCapacity
+        "
+      >
+        {{
+          course().enrollmentCount >= course().maxCapacity
+            ? 'Course Full'
+            : 'Enroll'
+        }}
+
+        @if (course().enrollmentCount < course().maxCapacity) {
+          <span>→</span>
+        }
+
+      </button>
+
+    </div>
+
+  </div>
+
+</article>

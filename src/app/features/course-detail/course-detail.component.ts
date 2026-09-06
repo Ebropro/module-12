@@ -8,6 +8,7 @@ import {
 } from '@angular/core';
 
 import { RouterLink } from '@angular/router';
+import { CommonModule } from '@angular/common';
 
 import { CourseService } from '../../services/course.service';
 import { AuthService } from '../../services/auth.service';
@@ -16,7 +17,7 @@ import { Course } from '../../models/course.model';
 @Component({
   selector: 'app-course-detail',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, CommonModule],
   changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './course-detail.component.html',
 })

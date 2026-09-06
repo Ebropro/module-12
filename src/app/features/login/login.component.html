@@ -1,0 +1,195 @@
+<div class="login-page">
+
+  <div class="login-decoration decoration-left"></div>
+  <div class="login-decoration decoration-right"></div>
+
+
+  <main class="login-container">
+
+    <section class="login-card">
+
+      <div class="brand">
+
+        <div class="brand-mark">
+          T
+        </div>
+
+        <div>
+          <strong>
+            TMS
+          </strong>
+
+          <span>
+            Training Management System
+          </span>
+        </div>
+
+      </div>
+
+
+      <div class="login-heading">
+
+        <h1>
+          Welcome back
+        </h1>
+
+        <p>
+          Sign in to continue to your account.
+        </p>
+
+      </div>
+
+
+      <form
+        (ngSubmit)="login()"
+        class="login-form"
+      >
+
+        <div class="field">
+
+          <label for="username">
+            Username
+          </label>
+
+          <div class="input-wrapper">
+
+            <span class="input-icon">
+              @
+            </span>
+
+            <input
+              id="username"
+              name="username"
+              type="text"
+              [(ngModel)]="username"
+              required
+              autocomplete="username"
+              placeholder="Enter your username"
+            />
+
+          </div>
+
+        </div>
+
+
+        <div class="field">
+
+          <div class="password-label">
+
+            <label for="password">
+              Password
+            </label>
+
+          </div>
+
+          <div class="input-wrapper">
+
+            <span class="input-icon">
+              •
+            </span>
+
+            <input
+              id="password"
+              name="password"
+              type="password"
+              [(ngModel)]="password"
+              required
+              autocomplete="current-password"
+              placeholder="Enter your password"
+            />
+
+          </div>
+
+        </div>
+
+
+        @if (errorMessage()) {
+
+          <div class="login-error">
+
+            <span>
+              !
+            </span>
+
+            <div>
+              <strong>
+                Sign in failed
+              </strong>
+
+              <p>
+                {{ errorMessage() }}
+              </p>
+            </div>
+
+          </div>
+
+        }
+
+
+        <button
+          type="submit"
+          class="login-button"
+          [disabled]="
+            loading() ||
+            !username ||
+            !password
+          "
+        >
+
+          @if (loading()) {
+
+            <span class="spinner"></span>
+
+            Signing in...
+
+          } @else {
+
+            Sign in
+
+            <span>
+              →
+            </span>
+
+          }
+
+        </button>
+
+      </form>
+
+
+      <div class="demo-account">
+
+        <div class="demo-icon">
+          ◈
+        </div>
+
+        <div>
+
+          <strong>
+            Demo Account
+          </strong>
+
+          <p>
+            Username:
+            <b>admin</b>
+          </p>
+
+          <p>
+            Password:
+            <b>Password123!</b>
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <p class="login-footer">
+        Training Management System
+      </p>
+
+    </section>
+
+  </main>
+
+</div>
