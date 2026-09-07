@@ -21,6 +21,12 @@ public class AuthController : ControllerBase
     private readonly TmsDbContext _context;
     private readonly TokenService _tokenService;
 
+    //
+    private const string AccessTokenCookie = "tms_access_token";
+    private const string RefreshTokenCookie = "tms_refresh_token";
+
+    //
+
     public AuthController(
         UserManager<TmsUser> userManager,
         RoleManager<IdentityRole> roleManager,
@@ -154,6 +160,28 @@ public class AuthController : ControllerBase
         _context.RefreshTokens.Add(refreshToken);
 
         await _context.SaveChangesAsync();
+
+        Response.Cookies.Append(
+    "tms_access_token",
+    accessToken,
+    new CookieOptions
+    {
+        HttpOnly = true,
+        Secure = true,
+        SameSite = SameSiteMode.Lax,
+        Expires = DateTimeOffset.UtcNow.AddMinutes(15)
+    });
+
+        Response.Cookies.Append(
+            "tms_refresh_token",
+            refreshToken.Token,
+            new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Lax,
+                Expires = DateTimeOffset.UtcNow.AddDays(7)
+            });
 
         return Ok(new
         {

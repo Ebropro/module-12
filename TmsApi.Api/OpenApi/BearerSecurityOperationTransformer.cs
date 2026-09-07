@@ -4,16 +4,16 @@ using Microsoft.OpenApi;
 
 namespace TmsApi.Api.OpenApi;
 
-public sealed class BearerSecurityOperationTransformer
+public sealed class BearerSecurityOperationTransformer   
     : IOpenApiOperationTransformer
-{
-    public Task TransformAsync(
+{ 
+    public Task TransformAsync( 
         OpenApiOperation operation,
         OpenApiOperationTransformerContext context,
         CancellationToken cancellationToken)
     {
-        var metadata =
-            context.Description.ActionDescriptor.EndpointMetadata;
+        var metadata = 
+            context.Description.ActionDescriptor.   EndpointMetadata;
 
         var requiresAuthorization =
             metadata.OfType<IAuthorizeData>().Any();
@@ -23,7 +23,7 @@ public sealed class BearerSecurityOperationTransformer
             operation.Security =
             [
                 new OpenApiSecurityRequirement
-                {
+                { 
                     [
                         new OpenApiSecuritySchemeReference("Bearer")
                     ] = []

@@ -126,7 +126,7 @@ builder.Services.AddControllers(options =>
 builder.Services.AddSignalR();
 
 
-// M7 - Exercise 1: API Versioning
+
 // Step 1 Configure versioning in Program.cs
 builder.Services.AddOpenApi("v1", options =>
 {
@@ -193,7 +193,7 @@ builder.Services.AddAuthentication(options =>
         )
     };
 });
-// M7 Session 2 — Exercise 3, Step 1: register HybridCache
+
 builder.Services.AddHybridCache(options =>
 {
     options.DefaultEntryOptions = new HybridCacheEntryOptions
@@ -461,11 +461,13 @@ if (app.Environment.IsDevelopment())
     var roleManager =
         scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 
-    await DataSeeder.SeedAsync(
-        context,
-        userManager,
-        roleManager);
-}
+        await DataSeeder.SeedAsync(
+            context,
+            userManager,
+            roleManager);
+    }
 
-app.Run();
+    app.Run();
 
+
+public partial class Program { }
