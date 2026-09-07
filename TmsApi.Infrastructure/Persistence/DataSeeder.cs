@@ -405,8 +405,10 @@ public static class DataSeeder
     RoleManager<IdentityRole> roleManager,
     CancellationToken ct = default)
     {
-        await context.Database.MigrateAsync(ct);
-
+        if (context.Database.IsRelational())
+        {
+            await context.Database.MigrateAsync(ct);
+        }
         var instructors = await SeedInstructorsAsync(
             userManager,
             roleManager,
