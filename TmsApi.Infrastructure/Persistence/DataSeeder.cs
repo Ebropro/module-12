@@ -388,17 +388,8 @@ public static class DataSeeder
         }
 
         await context.SaveChangesAsync(ct);
-    }
-
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="context"></param>
-    /// <param name="userManager"></param>
-    /// <param name="roleManager"></param>
-    /// <param name="ct"></param>
-    /// <returns></returns>
+    } 
+  
     public static async Task SeedAsync(
     TmsDbContext context,
     UserManager<TmsUser> userManager,
